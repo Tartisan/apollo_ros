@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>transform</name>
+  <version>0.0.0</version>
+  <description>The transform package</description>
+  <maintainer email="apollo@todo.todo">apollo</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <exec_depend>roscpp</exec_depend>
+</package>

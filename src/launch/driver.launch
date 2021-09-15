@@ -1,0 +1,16 @@
+<launch>
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/video0" />
+    <param name="image_width" value="1920" />
+    <param name="image_height" value="1080" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+    <remap from="/usb_cam/image_raw" to="/apollo/sensor/camera/front_6mm/image"/>
+  </node>
+  <!-- <node name="front_6mm" pkg="image_view" type="image_view" respawn="false">
+    <remap from="image" to="/apollo/sensor/camera/front_6mm/image"/>
+    <param name="autosize" value="true" />
+  </node> -->
+
+</launch>

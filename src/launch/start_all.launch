@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find launch)/driver.launch"/>
+  <include file="$(find launch)/perception.launch"/>
+</launch>

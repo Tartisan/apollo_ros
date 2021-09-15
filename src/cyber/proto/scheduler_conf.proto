@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package apollo.cyber.proto;
+
+import "cyber/proto/classic_conf.proto";
+import "cyber/proto/choreography_conf.proto";
+
+message SchedulerConf {
+  optional string policy = 1;
+  optional uint32 routine_num = 2;
+  optional uint32 default_proc_num = 3;
+  optional ClassicConf classic_conf = 4;
+  optional ChoreographyConf choreography_conf = 5;
+}

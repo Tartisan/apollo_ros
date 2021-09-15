@@ -1,0 +1,26 @@
+## obstacle_camera_perception
+cuda_add_library(perception_inference 
+  operators/roipooling_layer.cc
+  operators/roipooling_layer.cu
+  tensorrt/plugins/argmax_plugin.cu
+  tensorrt/plugins/leakyReLU_plugin.cu
+  tensorrt/plugins/slice_plugin.cu
+  tensorrt/plugins/softmax_plugin.cu
+  tensorrt/batch_stream.cc
+  tensorrt/rt_common.cc
+  tensorrt/rt_net.cc
+  tensorrt/rt_utils.cc
+  utils/cuda_util.cu
+  utils/gemm.cu
+  utils/resize.cu
+  utils/util.cu
+  utils/util.cc
+  inference_factory.cc
+  inference.cc
+  layer.cc
+)
+target_link_libraries(perception_inference 
+  ${CUDA_LIBRARIES}
+  ${Boost_LIBRARIES}
+  perception_proto
+)

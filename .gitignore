@@ -1,0 +1,15 @@
+.vscode
+build/
+devel/
+
+*.bag
+*.tar.gz 
+*.tar.xz
+*.zip
+*.DS_Store
+.tags
+.tags_sorted_by_file
+.catkin_workspace
+
+toplevel.cmake
+src/CMakeLists.txt

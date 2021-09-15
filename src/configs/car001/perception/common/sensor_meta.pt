@@ -1,0 +1,98 @@
+sensor_meta {
+    name: "velodyne128"
+    type: VELODYNE_128
+    orientation: PANORAMIC
+}
+sensor_meta {
+    name: "velodyne64"
+    type: VELODYNE_64
+    orientation: PANORAMIC
+}
+sensor_meta {
+    name: "velodyne16"
+    type: VELODYNE_16
+    orientation: FRONT
+}
+
+sensor_meta {
+    name: "radar_front_left"
+    type: LONG_RANGE_RADAR
+    orientation: FRONT
+}
+
+sensor_meta {
+    name: "radar_front_right"
+    type: LONG_RANGE_RADAR
+    orientation: FRONT
+}
+
+sensor_meta {
+    name: "radar_rear"
+    type: LONG_RANGE_RADAR
+    orientation: REAR
+}
+
+sensor_meta {
+    name: "sonic0"
+    type: ULTRASONIC
+    orientation: FRONT
+}
+sensor_meta {
+    name: "sonic1"
+    type: ULTRASONIC
+    orientation: FRONT
+}
+sensor_meta {
+    name: "sonic2"
+    type: ULTRASONIC
+    orientation: FRONT
+}
+sensor_meta {
+    name: "sonic3"
+    type: ULTRASONIC
+    orientation: FRONT
+}
+sensor_meta {
+    name: "sonic4"
+    type: ULTRASONIC
+    orientation: REAR
+}
+sensor_meta {
+    name: "sonic5"
+    type: ULTRASONIC
+    orientation: REAR
+}
+sensor_meta {
+    name: "sonic6"
+    type: ULTRASONIC
+    orientation: REAR
+}
+sensor_meta {
+    name: "sonic7"
+    type: ULTRASONIC
+    orientation: REAR
+}
+
+sensor_meta {
+    name: "front_6mm"
+    type: MONOCULAR_CAMERA
+    orientation: FRONT
+}
+
+sensor_meta {
+    name: "front_12mm"
+    type: MONOCULAR_CAMERA
+    orientation: FRONT
+}
+
+#sensor_meta {
+#    name: "onsemi_wide"
+#    type: MONOCULAR_CAMERA
+#    orientation: FRONT
+#}
+
+#sensor_meta {
+#    name: "onsemi_traffic"
+#    type: MONOCULAR_CAMERA
+#    orientation: FRONT
+#}
