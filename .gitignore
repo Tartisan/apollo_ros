@@ -1,6 +1,6 @@
 .vscode
-build/
-devel/
+/build
+/devel
 
 *.bag
 *.tar.gz 

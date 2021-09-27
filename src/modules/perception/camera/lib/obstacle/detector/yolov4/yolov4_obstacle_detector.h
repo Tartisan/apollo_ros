@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright 2018 The Apollo Authors. All Rights Reserved.
+ * Copyright 2020 The Apollo Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,14 @@
 #include <vector>
 
 #include "modules/perception/camera/lib/obstacle/detector/proto/yolo.pb.h"
+
+#include "cyber/common/file.h"
 #include "modules/perception/base/box.h"
 #include "modules/perception/base/object_types.h"
 #include "modules/perception/camera/common/util.h"
 #include "modules/perception/camera/lib/interface/base_feature_extractor.h"
 #include "modules/perception/camera/lib/interface/base_obstacle_detector.h"
-#include "modules/perception/camera/lib/obstacle/detector/yolo/region_output.h"
+#include "modules/perception/camera/lib/obstacle/detector/yolov4/region_output.h"
 #include "modules/perception/inference/inference.h"
 #include "modules/perception/inference/utils/resize.h"
 #include "modules/perception/inference/utils/util.h"
@@ -35,10 +37,10 @@ namespace apollo {
 namespace perception {
 namespace camera {
 
-class YoloObstacleDetector : public BaseObstacleDetector {
+class Yolov4ObstacleDetector : public BaseObstacleDetector {
  public:
-  YoloObstacleDetector() : BaseObstacleDetector() {}
-  virtual ~YoloObstacleDetector() {
+  Yolov4ObstacleDetector() : BaseObstacleDetector() {}
+  virtual ~Yolov4ObstacleDetector() {
     if (stream_ != nullptr) {
       cudaStreamDestroy(stream_);
     }

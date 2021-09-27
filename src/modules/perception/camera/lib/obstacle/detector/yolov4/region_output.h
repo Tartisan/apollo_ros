@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright 2018 The Apollo Authors. All Rights Reserved.
+ * Copyright 2020 The Apollo Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@
 #include <utility>
 #include <vector>
 
+#include "modules/perception/camera/lib/obstacle/detector/proto/yolo.pb.h"
+
 #include "modules/perception/base/blob.h"
 #include "modules/perception/base/box.h"
 #include "modules/perception/base/object.h"
 #include "modules/perception/base/object_types.h"
 #include "modules/perception/camera/common/math_functions.h"
 #include "modules/perception/camera/common/util.h"
-#include "modules/perception/camera/lib/obstacle/detector/proto/yolo.pb.h"
 
 namespace apollo {
 namespace perception {
@@ -126,44 +127,6 @@ __host__ __device__ float bbox_size_gpu(const float *bbox,
                                         const bool normalized);
 __host__ __device__ float jaccard_overlap_gpu(const float *bbox1,
                                               const float *bbox2);
-
-void get_kernel(int block_size, const int thread_size, int n,
-                const float *loc_data,
-                const float *obj_data,
-                const float *cls_data,
-                const float *ori_data,
-                const float *dim_data,
-                const float *lof_data,
-                const float *lor_data,
-                const float *area_id_data,
-                const float *visible_ratio_data,
-                const float *cut_off_ratio_data,
-                const float *brvis_data,
-                const float *brswt_data,
-                const float *ltvis_data,
-                const float *ltswt_data,
-                const float *rtvis_data,
-                const float *rtswt_data,
-                const float *anchor_data,
-                const float *expand_data,
-                int width,
-                int height,
-                int num_anchors,
-                int num_classes,
-                float confidence_threshold,
-                float light_vis_conf_threshold,
-                float light_swt_conf_threshold,
-                bool with_box3d,
-                bool with_frbox,
-                bool with_lights,
-                bool with_ratios,
-                bool multi_scale,
-                int num_areas,
-                float *res_box_data,
-                float *res_cls_data,
-                int res_cls_offset,
-                int all_scales_num_candidates, 
-                const cudaStream_t &stream);
 
 template <typename T>
 bool sort_score_pair_descend(const std::pair<float, T> &pair1,

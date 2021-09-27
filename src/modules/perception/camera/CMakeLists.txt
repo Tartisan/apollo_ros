@@ -2,7 +2,7 @@
 add_subdirectory(app/proto)
 add_subdirectory(common/proto)
 add_subdirectory(lib/feature_extractor/tfe/proto)
-add_subdirectory(lib/obstacle/detector/yolo/proto)
+add_subdirectory(lib/obstacle/detector/proto)
 add_subdirectory(lib/obstacle/postprocessor/location_refiner/proto)
 add_subdirectory(lib/obstacle/tracker/omt/proto)
 add_subdirectory(lib/obstacle/transformer/multicue/proto)
@@ -29,6 +29,9 @@ cuda_add_library(perception_camera
   lib/feature_extractor/tfe/project_feature.cc
   lib/feature_extractor/tfe/tracking_feat_extractor.cc
   # lib/obstacle
+  lib/obstacle/detector/smoke/region_output.cc
+  lib/obstacle/detector/smoke/region_output.cu
+  lib/obstacle/detector/smoke/smoke_obstacle_detector.cc
   lib/obstacle/detector/yolo/region_output.cc
   lib/obstacle/detector/yolo/region_output.cu
   lib/obstacle/detector/yolo/yolo_obstacle_detector.cc
@@ -54,7 +57,7 @@ target_link_libraries(perception_camera
   camera_app_proto
   camera_common_proto
   camera_lib_feature_extractor_tfe_proto
-  camera_lib_detector_yolo_proto
+  camera_lib_detector_proto
   camera_lib_postprocessor_location_refiner_proto
   camera_lib_tracker_omt_proto
   camera_lib_transformer_multicue_proto

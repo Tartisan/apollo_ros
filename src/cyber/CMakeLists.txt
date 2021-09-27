@@ -3,6 +3,13 @@ project(cyber)
 
 find_package(catkin REQUIRED COMPONENTS roscpp)
 
+catkin_package(
+  # INCLUDE_DIRS include
+  # LIBRARIES perception
+  CATKIN_DEPENDS roscpp
+  # DEPENDS system_lib
+)
+
 include_directories(
   ${CMAKE_SOURCE_DIR}/
   ${CMAKE_SOURCE_DIR}/../devel/include/

@@ -1,6 +1,6 @@
 find_package(Protobuf REQUIRED)
 
-set(pb_out_path ${CMAKE_SOURCE_DIR}/../devel/include/modules/perception/camera/lib/obstacle/detector/yolo/proto) # 设置 .proto 生成文件的输出目录
+set(pb_out_path ${CMAKE_SOURCE_DIR}/../devel/include/modules/perception/camera/lib/obstacle/detector/proto) # 设置 .proto 生成文件的输出目录
 file(MAKE_DIRECTORY ${pb_out_path})
 
 find_program(PROTOC protoc) # 寻找 protoc
@@ -30,10 +30,10 @@ function(generate_cpp_pb_file pb_path)
   set_source_files_properties(${pb_out_files} PROPERTIES GENERATED TRUE)
 
   link_directories(${CMAKE_SOURCE_DIR}/../devel/lib)
-  add_library(camera_lib_detector_yolo_proto
+  add_library(camera_lib_detector_proto
     ${pb_out_files}
   )
-  target_link_libraries(camera_lib_detector_yolo_proto
+  target_link_libraries(camera_lib_detector_proto
     ${catkin_LIBRARIES}
     ${PROTOBUF_LIBRARIES}
   )
