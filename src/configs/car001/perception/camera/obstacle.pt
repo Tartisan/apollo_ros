@@ -1,7 +1,7 @@
 gpu_id : 0
 detector_param {
   plugin_param{
-    name : "YoloObstacleDetector"
+    name : "SmokeObstacleDetector"
     root_dir : "models/yolo_obstacle_detector/"
     config_file : "config.pt"
   }
@@ -10,7 +10,7 @@ detector_param {
 }
 detector_param {
   plugin_param{
-    name : "YoloObstacleDetector"
+    name : "SmokeObstacleDetector"
     root_dir : "models/yolo_obstacle_detector/"
     config_file : "config.pt"
   }

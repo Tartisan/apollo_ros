@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(perception)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
+
+list(APPEND CMAKE_PREFIX_PATH "/usr/local/libtorch")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -23,6 +25,7 @@ find_package(Boost REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(CUDA REQUIRED)
+find_package(Torch REQUIRED)
 # find_package(absl REQUIRED)
 # Resolve system dependency on yaml-cpp, which apparently does not provide 
 # a CMake find_package() module.

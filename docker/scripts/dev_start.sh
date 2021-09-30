@@ -1,4 +1,9 @@
 #/bin/bash
+CONTAINER_NAME=cuda10.0-melodic-ubuntu18.04
+docker stop $CONTAINER_NAME
+docker rm $CONTAINER_NAME
+sleep 2
+
 USER_ID=$(id -u)
 GRP=$(id -g -n)
 GRP_ID=$(id -g)
@@ -27,7 +32,10 @@ docker run -it --gpus all -d \
 		-e DISPLAY=$DISPLAY \
 		-e NVIDIA_VISIBLE_DEVICES=all \
 		-e NVIDIA_DRIVER_CAPABILITIES=compute,graphics,video,utility \
-		--env ROS_DOMAIN_ID=$(date +%N) \
+		-e ROS_DOMAIN_ID=$(date +%N) \
+    -e ROS_MASTER_URI=http:192.168.1.94:11311 \
+    -e ROS_IP=192.168.1.94 \
+    -e ROS_HOSTNAME=192.168.1.94 \
 		-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
 		-v /media:/media \
 		-v $HOME/.cache:${DOCKER_HOME}/.cache \
@@ -35,7 +43,7 @@ docker run -it --gpus all -d \
 		-v /home/$USER/work:/work/share \
 		--net host \
 		--shm-size 512M \
-		-w /work/share \
+		-w /work/share/apollo_ros \
 		$IMG \
 		/bin/bash
 

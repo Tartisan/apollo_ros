@@ -28,7 +28,7 @@
 #include "modules/perception/camera/common/util.h"
 #include "modules/perception/camera/lib/interface/base_feature_extractor.h"
 #include "modules/perception/camera/lib/interface/base_obstacle_detector.h"
-#include "modules/perception/camera/lib/obstacle/detector/yolov4/region_output.h"
+#include "modules/perception/camera/lib/obstacle/detector/yolo/region_output.h"
 #include "modules/perception/inference/inference.h"
 #include "modules/perception/inference/utils/resize.h"
 #include "modules/perception/inference/utils/util.h"

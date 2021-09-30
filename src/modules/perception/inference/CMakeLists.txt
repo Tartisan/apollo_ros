@@ -1,5 +1,9 @@
 ## obstacle_camera_perception
 cuda_add_library(perception_inference 
+  libtorch/torch_det.cc
+  libtorch/torch_net.cc
+  onnx/libtorch_obstacle_detector.cc
+  # onnx/onnx_obstacle_detector.cc
   operators/roipooling_layer.cc
   operators/roipooling_layer.cu
   tensorrt/plugins/argmax_plugin.cu
@@ -21,6 +25,7 @@ cuda_add_library(perception_inference
 )
 target_link_libraries(perception_inference 
   ${CUDA_LIBRARIES}
+  ${TORCH_LIBRARIES}
   ${Boost_LIBRARIES}
   perception_proto
 )
