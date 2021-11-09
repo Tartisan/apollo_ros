@@ -19,12 +19,12 @@
 #include <memory>
 #include <thread>
 
+#include "cyber/common/file.h"
 #include "cyber/common/log.h"
+#include "cyber/time/time.h"
 #include "gflags/gflags.h"
 #include "modules/common/proto/error_code.pb.h"
-#include "modules/common/time/time.h"
 #include "modules/common/util/factory.h"
-#include "modules/common/util/file.h"
 #include "modules/drivers/canbus/can_client/can_client.h"
 #include "modules/drivers/canbus/can_client/can_client_factory.h"
 #include "modules/drivers/canbus/common/byte.h"
@@ -41,6 +41,8 @@ DEFINE_int64(agent_mutual_send_frames, 1000, "Every agent send frame num");
 
 const int32_t MAX_CAN_SEND_FRAME_LEN = 1;
 const int32_t MAX_CAN_RECV_FRAME_LEN = 10;
+
+using apollo::cyber::Time;
 
 namespace apollo {
 namespace drivers {
@@ -93,9 +95,6 @@ class CanAgent {
   }
 
   void SendThreadFunc() {
-    using common::time::Clock;
-    using common::time::AsInt64;
-    using common::time::micros;
     using common::ErrorCode;
     AINFO << "Send thread starting...";
     TestCanParam *param = param_ptr();
@@ -123,7 +122,7 @@ class CanAgent {
     while (!other_agent()->is_receiving()) {
       std::this_thread::yield();
     }
-    int64_t start = AsInt64<micros>(Clock::Now());
+    int64_t start = Time::Now().ToMicrosecond();
     while (true) {
       // param->print();
       if (count >= FLAGS_agent_mutual_send_frames) {
@@ -158,7 +157,7 @@ class CanAgent {
               << ", conf:" << param->conf.ShortDebugString();
       }
     }
-    int64_t end = AsInt64<micros>(Clock::Now());
+    int64_t end = Time::Now().ToMicrosecond();
     param->send_time = static_cast<int32_t>(end - start);
     // In case for finish too quick to receiver miss some msg
     sleep(2);
@@ -178,9 +177,6 @@ class CanAgent {
   void is_sending_finish(bool val) { is_sending_finish_ = val; }
 
   void RecvThreadFunc() {
-    using common::time::Clock;
-    using common::time::AsInt64;
-    using common::time::micros;
     using common::ErrorCode;
     AINFO << "Receive thread starting...";
     TestCanParam *param = param_ptr();
@@ -198,7 +194,7 @@ class CanAgent {
         continue;
       }
       if (first) {
-        start = AsInt64<micros>(Clock::Now());
+        start = Time::Now().ToMicrosecond();
         first = false;
       }
       if (ret != ErrorCode::OK || len == 0) {
@@ -214,7 +210,7 @@ class CanAgent {
               << ",recv_cnt: " << param->recv_cnt;
       }
     }
-    int64_t end = AsInt64<micros>(Clock::Now());
+    int64_t end = Time::Now().ToMicrosecond();
     param->recv_time = static_cast<int32_t>(end - start);
     AINFO << "Recv thread stopping..., conf:" << param->conf.ShortDebugString();
     return;
@@ -252,12 +248,12 @@ int main(int32_t argc, char **argv) {
   google::InitGoogleLogging(argv[0]);
   google::ParseCommandLineFlags(&argc, &argv, true);
 
+  using apollo::common::ErrorCode;
+  using apollo::drivers::canbus::CanAgent;
   using apollo::drivers::canbus::CANCardParameter;
   using apollo::drivers::canbus::CanClient;
   using apollo::drivers::canbus::CanClientFactory;
   using apollo::drivers::canbus::TestCanParam;
-  using apollo::drivers::canbus::CanAgent;
-  using apollo::common::ErrorCode;
   CANCardParameter can_client_conf_a;
   std::shared_ptr<TestCanParam> param_ptr_a(new TestCanParam());
   std::shared_ptr<TestCanParam> param_ptr_b(new TestCanParam());
@@ -265,20 +261,19 @@ int main(int32_t argc, char **argv) {
   auto can_client_factory = CanClientFactory::Instance();
   can_client_factory->RegisterCanClients();
 
-  if (!apollo::common::util::GetProtoFromFile(FLAGS_can_client_conf_file_a,
-                                              &can_client_conf_a)) {
+  if (!apollo::cyber::common::GetProtoFromFile(FLAGS_can_client_conf_file_a,
+                                               &can_client_conf_a)) {
     AERROR << "Unable to load canbus conf file: "
            << FLAGS_can_client_conf_file_a;
-    return 1;
-  } else {
-    AINFO << "Conf file is loaded: " << FLAGS_can_client_conf_file_a;
+    return -1;
   }
+  AINFO << "Conf file is loaded: " << FLAGS_can_client_conf_file_a;
   AINFO << can_client_conf_a.ShortDebugString();
   auto client_a = can_client_factory->CreateObject(can_client_conf_a.brand());
   if (!client_a || !client_a->Init(can_client_conf_a) ||
       client_a->Start() != ErrorCode::OK) {
     AERROR << "Create can client a failed.";
-    return 1;
+    return -1;
   }
   param_ptr_a->can_client = client_a.get();
   param_ptr_a->is_first_agent = true;
@@ -287,20 +282,19 @@ int main(int32_t argc, char **argv) {
   CANCardParameter can_client_conf_b;
   std::unique_ptr<CanClient> client_b;
   if (!FLAGS_only_one_send) {
-    if (!apollo::common::util::GetProtoFromFile(FLAGS_can_client_conf_file_b,
-                                                &can_client_conf_b)) {
+    if (!apollo::cyber::common::GetProtoFromFile(FLAGS_can_client_conf_file_b,
+                                                 &can_client_conf_b)) {
       AERROR << "Unable to load canbus conf file: "
              << FLAGS_can_client_conf_file_b;
-      return 1;
-    } else {
-      AINFO << "Conf file is loaded: " << FLAGS_can_client_conf_file_b;
+      return -1;
     }
+    AINFO << "Conf file is loaded: " << FLAGS_can_client_conf_file_b;
     AINFO << can_client_conf_b.ShortDebugString();
     client_b = can_client_factory->CreateObject(can_client_conf_b.brand());
     if (!client_b || !client_b->Init(can_client_conf_b) ||
         client_b->Start() != ErrorCode::OK) {
       AERROR << "Create can client b failed.";
-      return 1;
+      return -1;
     }
     param_ptr_b->can_client = client_b.get();
     param_ptr_b->conf = can_client_conf_b;

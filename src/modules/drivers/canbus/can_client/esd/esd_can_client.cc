@@ -22,6 +22,9 @@
 
 #include "modules/drivers/canbus/can_client/esd/esd_can_client.h"
 
+#include "modules/drivers/canbus/common/byte.h"
+#include "modules/drivers/canbus/sensor_gflags.h"
+
 namespace apollo {
 namespace drivers {
 namespace canbus {
@@ -37,6 +40,15 @@ bool EsdCanClient::Init(const CANCardParameter &parameter) {
     return false;
   }
   port_ = parameter.channel_id();
+
+  int num_ports = parameter.num_ports();
+
+  if (port_ > num_ports || port_ < 0) {
+    AERROR << "Can port number [" << port_ << "] is out of range [0, "
+           << num_ports << ") !";
+    return false;
+  }
+
   return true;
 }
 
@@ -57,12 +69,12 @@ ErrorCode EsdCanClient::Start() {
   // int32_t ret = canOpen(net, pCtx->mode, txbufsize, rxbufsize, 0, 0,
   // &dev_handler_);
   uint32_t mode = 0;
-  // mode |= NTCAN_MODE_NO_RTR;
-  if (port_ > MAX_CAN_PORT || port_ < 0) {
-    AERROR << "can port number [" << port_ << "] is out of the range [0,"
-           << MAX_CAN_PORT << "]";
-    return ErrorCode::CAN_CLIENT_ERROR_BASE;
+
+  if (FLAGS_esd_can_extended_frame) {
+    mode = NTCAN_MODE_NO_RTR;
   }
+
+  // mode |= NTCAN_MODE_NO_RTR;
   int32_t ret = canOpen(port_, mode, NTCAN_MAX_TX_QUEUESIZE,
                         NTCAN_MAX_RX_QUEUESIZE, 5, 5, &dev_handler_);
   if (ret != NTCAN_SUCCESS) {
@@ -82,8 +94,15 @@ ErrorCode EsdCanClient::Start() {
   // otherwise a
   // received  message or event is discarded by the driver for this handle.
   // 1. set receive message_id filter, ie white list
+
   int32_t id_count = 0x800;
   ret = canIdRegionAdd(dev_handler_, 0, &id_count);
+
+  if (FLAGS_esd_can_extended_frame) {
+    id_count = 0x1FFFFFFE;
+    ret = canIdRegionAdd(dev_handler_, 0x20000000, &id_count);
+  }
+
   if (ret != NTCAN_SUCCESS) {
     AERROR << "add receive msg id filter error code: " << ret << ", "
            << GetErrorString(ret);

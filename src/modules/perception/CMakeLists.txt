@@ -24,8 +24,6 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(CUDA REQUIRED)
-find_package(Torch REQUIRED)
 # find_package(absl REQUIRED)
 # Resolve system dependency on yaml-cpp, which apparently does not provide 
 # a CMake find_package() module.
@@ -34,25 +32,31 @@ pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
 find_path(YAML_CPP_INCLUDE_DIR NAMES yaml_cpp.h PATHS ${YAML_CPP_INCLUDE_DIRS})
 find_library(YAML_CPP_LIBRARY NAMES YAML_CPP PATHS ${YAML_CPP_LIBRARIES})
 
-set(MY_CUDA /usr/local/cuda/targets/x86_64-linux)
-set(CUDA_INCLUDE_DIRS "${MY_CUDA}/include" ${CUDA_INCLUDE_DIRS})
-set(CUDA_LIBRARIES ${CUDA_LIBRARIES} 
-  "${MY_CUDA}/lib/libcudart.so" 
-  "${MY_CUDA}/lib/stubs/libcuda.so" 
-  "${MY_CUDA}/lib/libcublas.so"
-  "${MY_CUDA}/lib/libcublas.so"
-  "${MY_CUDA}/lib/libnppial.so"
-  "${MY_CUDA}/lib/libnppicc.so"
-  "${MY_CUDA}/lib/libnppicom.so"
-  "${MY_CUDA}/lib/libnppidei.so"
-  "${MY_CUDA}/lib/libnppif.so"
-  "${MY_CUDA}/lib/libnppig.so"
-  "${MY_CUDA}/lib/libnppim.so"
-  "${MY_CUDA}/lib/libnppist.so"
-  "${MY_CUDA}/lib/libnppisu.so"
-  "${MY_CUDA}/lib/libnppitc.so")
-set(CMAKE_CUDA_STANDARD 11)
-link_directories(${MY_CUDA}/lib)
+if(NOT NO_GPU)
+  message("No GPU, build on cpu mode")
+  find_package(CUDA REQUIRED)
+  find_package(Torch REQUIRED)
+
+  set(MY_CUDA /usr/local/cuda/targets/x86_64-linux)
+  set(CUDA_INCLUDE_DIRS "${MY_CUDA}/include" ${CUDA_INCLUDE_DIRS})
+  set(CUDA_LIBRARIES ${CUDA_LIBRARIES} 
+    "${MY_CUDA}/lib/libcudart.so" 
+    "${MY_CUDA}/lib/stubs/libcuda.so" 
+    "${MY_CUDA}/lib/libcublas.so"
+    "${MY_CUDA}/lib/libcublas.so"
+    "${MY_CUDA}/lib/libnppial.so"
+    "${MY_CUDA}/lib/libnppicc.so"
+    "${MY_CUDA}/lib/libnppicom.so"
+    "${MY_CUDA}/lib/libnppidei.so"
+    "${MY_CUDA}/lib/libnppif.so"
+    "${MY_CUDA}/lib/libnppig.so"
+    "${MY_CUDA}/lib/libnppim.so"
+    "${MY_CUDA}/lib/libnppist.so"
+    "${MY_CUDA}/lib/libnppisu.so"
+    "${MY_CUDA}/lib/libnppitc.so")
+  set(CMAKE_CUDA_STANDARD 11)
+  link_directories(${MY_CUDA}/lib)
+endif()
 
 catkin_package(
   # INCLUDE_DIRS include
@@ -81,29 +85,32 @@ link_directories(
 )
 
 add_subdirectory(proto)
-add_subdirectory(base)
-add_subdirectory(common)
-add_subdirectory(lib)
-add_subdirectory(inference)
-add_subdirectory(camera)
-# add_subdirectory(lidar)
-# add_subdirectory(radar)
 
-################# executable ################
-add_executable(fusion_camera_detection 
-  onboard/fusion_camera_detection_node.cc 
-  onboard/fusion_camera_detection.cc
-)
-target_link_libraries(fusion_camera_detection 
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${CUDA_LIBRARIES}
-  ${PROTOBUF_LIBRARIES}
-  ${YAML_CPP_LIBRARIES}
-  perception_base
-  perception_camera
-  perception_common
-  perception_inference
-  perception_proto
-  perception_lib
-)
+if(NOT NO_GPU)
+  add_subdirectory(base)
+  add_subdirectory(common)
+  add_subdirectory(lib)
+  add_subdirectory(inference)
+  add_subdirectory(camera)
+  # add_subdirectory(lidar)
+  # add_subdirectory(radar)
+
+  ################# executable ################
+  add_executable(fusion_camera_detection 
+    onboard/fusion_camera_detection_node.cc 
+    onboard/fusion_camera_detection.cc
+  )
+  target_link_libraries(fusion_camera_detection 
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    ${CUDA_LIBRARIES}
+    ${PROTOBUF_LIBRARIES}
+    ${YAML_CPP_LIBRARIES}
+    perception_base
+    perception_camera
+    perception_common
+    perception_inference
+    perception_proto
+    perception_lib
+  )
+endif()

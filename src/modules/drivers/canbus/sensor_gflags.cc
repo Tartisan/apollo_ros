@@ -20,9 +20,6 @@
 DEFINE_string(node_name, "chassis", "The chassis module name in proto");
 DEFINE_string(canbus_driver_name, "canbus", "Driver name.");
 
-DEFINE_string(adapter_config_filename, "modules/canbus/conf/adapter.conf",
-              "The adapter config file");
-
 // data file
 DEFINE_string(sensor_conf_file, "", "Sensor conf file");
 
@@ -32,3 +29,7 @@ DEFINE_double(sensor_freq, 100,
 
 // System gflags
 DEFINE_string(sensor_node_name, "", "Sensor node name.");
+
+// esd can extended frame gflags
+DEFINE_bool(esd_can_extended_frame, false,
+            "check esd can exdended frame enabled or not");

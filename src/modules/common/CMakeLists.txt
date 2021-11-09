@@ -10,3 +10,12 @@ include_directories(
 
 add_subdirectory(proto)
 
+add_library(${PROJECT_NAME}
+  # configs
+  configs/config_gflags.cc
+  # monitor_log
+  # monitor_log/monitor_log_buffer.cc
+  # monitor_log/monitor_logger.cc
+  # util
+  util/util.cc
+)

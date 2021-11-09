@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <bitset>
 
+#include "modules/drivers/canbus/sensor_gflags.h"
+
 namespace apollo {
 namespace drivers {
 namespace canbus {
@@ -45,9 +47,20 @@ std::string Byte::byte_to_hex(const uint8_t value) {
 }
 
 std::string Byte::byte_to_hex(const uint32_t value) {
-  uint8_t high = (value >> 8) & 0xFF;
-  uint8_t low = value & 0xFF;
-  return byte_to_hex(high) + byte_to_hex(low);
+  uint8_t high;
+  uint8_t low;
+  std::string result = "";
+  if (FLAGS_esd_can_extended_frame && value >= 65536) {
+    high = static_cast<uint8_t>((value >> 24) & 0xFF);
+    low = static_cast<uint8_t>((value >> 16) & 0xFF);
+    result += byte_to_hex(high);
+    result += byte_to_hex(low);
+  }
+  high = static_cast<uint8_t>((value >> 8) & 0xFF);
+  low = static_cast<uint8_t>(value & 0xFF);
+  result += byte_to_hex(high);
+  result += byte_to_hex(low);
+  return result;
 }
 
 std::string Byte::byte_to_binary(const uint8_t value) {
@@ -55,16 +68,16 @@ std::string Byte::byte_to_binary(const uint8_t value) {
 }
 
 void Byte::set_bit_1(const int32_t pos) {
-  static const uint8_t BIT_MASK_1[] = {
-      0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+  static const uint8_t BIT_MASK_1[] = {0x01, 0x02, 0x04, 0x08,
+                                       0x10, 0x20, 0x40, 0x80};
   if (pos >= 0 && pos < BYTE_LENGTH) {
     *value_ |= BIT_MASK_1[pos];
   }
 }
 
 void Byte::set_bit_0(const int32_t pos) {
-  static const uint8_t BIT_MASK_0[] = {
-      0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF, 0x7F};
+  static const uint8_t BIT_MASK_0[] = {0xFE, 0xFD, 0xFB, 0xF7,
+                                       0xEF, 0xDF, 0xBF, 0x7F};
   if (pos >= 0 && pos < BYTE_LENGTH) {
     *value_ &= BIT_MASK_0[pos];
   }
@@ -100,8 +113,8 @@ void Byte::set_value(const uint8_t value, const int32_t start_pos,
   uint8_t current_value_high = *value_ & RANG_MASK_0_L[end_pos];
   uint8_t middle_value = value & RANG_MASK_1_L[real_len - 1];
   middle_value = static_cast<uint8_t>(middle_value << start_pos);
-  *value_ = static_cast<uint8_t>(
-      current_value_high + middle_value + current_value_low);
+  *value_ = static_cast<uint8_t>(current_value_high + middle_value +
+                                 current_value_low);
 }
 
 uint8_t Byte::get_byte() const { return *value_; }

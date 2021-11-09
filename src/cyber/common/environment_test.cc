@@ -14,11 +14,11 @@
  * limitations under the License.
  *****************************************************************************/
 
-#include "gtest/gtest.h"
-
-#include <stdlib.h>
-
 #include "cyber/common/environment.h"
+
+#include <cstdlib>
+
+#include "gtest/gtest.h"
 
 namespace apollo {
 namespace cyber {
@@ -32,6 +32,9 @@ TEST(EnvironmentTest, get_env) {
   env_value = GetEnv("EnvironmentTest_get_env");
   EXPECT_EQ(env_value, "123456789");
   unsetenv("EnvironmentTest_get_env");
+
+  const std::string default_value = "DEFAULT_FOR_TEST";
+  EXPECT_EQ(default_value, GetEnv("SOMETHING_NOT_EXIST", default_value));
 }
 
 TEST(EnvironmentTest, work_root) {

@@ -21,9 +21,6 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
 #include <net/if.h>
@@ -34,6 +31,9 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -55,7 +55,7 @@ namespace can {
 
 /**
  * @class SocketCanClientRaw
- * @brief The class which defines a ESD CAN client which inherites CanClient.
+ * @brief The class which defines an ESD CAN client which inherites CanClient.
  */
 class SocketCanClientRaw : public CanClient {
  public:
@@ -112,6 +112,7 @@ class SocketCanClientRaw : public CanClient {
  private:
   int dev_handler_ = 0;
   CANCardParameter::CANChannelId port_;
+  CANCardParameter::CANInterface interface_;
   can_frame send_frames_[MAX_CAN_SEND_FRAME_LEN];
   can_frame recv_frames_[MAX_CAN_RECV_FRAME_LEN];
 };

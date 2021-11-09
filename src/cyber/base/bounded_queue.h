@@ -17,12 +17,14 @@
 #ifndef CYBER_BASE_BOUNDED_QUEUE_H_
 #define CYBER_BASE_BOUNDED_QUEUE_H_
 
-#include <stdint.h>
 #include <unistd.h>
+
 #include <algorithm>
 #include <atomic>
+#include <cstdint>
 #include <cstdlib>
 #include <memory>
+#include <utility>
 
 #include "cyber/base/macros.h"
 #include "cyber/base/wait_strategy.h"
@@ -77,7 +79,7 @@ BoundedQueue<T>::~BoundedQueue() {
     BreakAllWait();
   }
   if (pool_) {
-    for (int i = 0; i < pool_size_; ++i) {
+    for (uint64_t i = 0; i < pool_size_; ++i) {
       pool_[i].~T();
     }
     std::free(pool_);
@@ -97,7 +99,7 @@ bool BoundedQueue<T>::Init(uint64_t size, WaitStrategy* strategy) {
   if (pool_ == nullptr) {
     return false;
   }
-  for (int i = 0; i < pool_size_; ++i) {
+  for (uint64_t i = 0; i < pool_size_; ++i) {
     new (&(pool_[i])) T();
   }
   wait_strategy_.reset(strategy);
@@ -120,9 +122,9 @@ bool BoundedQueue<T>::Enqueue(const T& element) {
   pool_[GetIndex(old_tail)] = element;
   do {
     old_commit = old_tail;
-  } while (unlikely(!commit_.compare_exchange_weak(old_commit, new_tail,
-                                                   std::memory_order_acq_rel,
-                                                   std::memory_order_relaxed)));
+  } while (cyber_unlikely(!commit_.compare_exchange_weak(
+      old_commit, new_tail, std::memory_order_acq_rel,
+      std::memory_order_relaxed)));
   wait_strategy_->NotifyOne();
   return true;
 }
@@ -140,12 +142,12 @@ bool BoundedQueue<T>::Enqueue(T&& element) {
   } while (!tail_.compare_exchange_weak(old_tail, new_tail,
                                         std::memory_order_acq_rel,
                                         std::memory_order_relaxed));
-  pool_[GetIndex(old_tail)] = element;
+  pool_[GetIndex(old_tail)] = std::move(element);
   do {
     old_commit = old_tail;
-  } while (unlikely(!commit_.compare_exchange_weak(old_commit, new_tail,
-                                                   std::memory_order_acq_rel,
-                                                   std::memory_order_relaxed)));
+  } while (cyber_unlikely(!commit_.compare_exchange_weak(
+      old_commit, new_tail, std::memory_order_acq_rel,
+      std::memory_order_relaxed)));
   wait_strategy_->NotifyOne();
   return true;
 }
@@ -171,30 +173,30 @@ bool BoundedQueue<T>::WaitEnqueue(const T& element) {
   while (!break_all_wait_) {
     if (Enqueue(element)) {
       return true;
-    } else {
-      if (wait_strategy_->EmptyWait()) {
-        continue;
-      }
-      // wait timeout
-      return false;
     }
+    if (wait_strategy_->EmptyWait()) {
+      continue;
+    }
+    // wait timeout
+    break;
   }
+
   return false;
 }
 
 template <typename T>
 bool BoundedQueue<T>::WaitEnqueue(T&& element) {
   while (!break_all_wait_) {
-    if (Enqueue(element)) {
+    if (Enqueue(std::move(element))) {
       return true;
-    } else {
-      if (wait_strategy_->EmptyWait()) {
-        continue;
-      }
-      // wait timeout
-      return false;
     }
+    if (wait_strategy_->EmptyWait()) {
+      continue;
+    }
+    // wait timeout
+    break;
   }
+
   return false;
 }
 
@@ -203,14 +205,14 @@ bool BoundedQueue<T>::WaitDequeue(T* element) {
   while (!break_all_wait_) {
     if (Dequeue(element)) {
       return true;
-    } else {
-      if (wait_strategy_->EmptyWait()) {
-        continue;
-      }
-      // wait timeout
-      return false;
     }
+    if (wait_strategy_->EmptyWait()) {
+      continue;
+    }
+    // wait timeout
+    break;
   }
+
   return false;
 }
 

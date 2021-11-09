@@ -17,16 +17,25 @@
 #include "cyber/common/file.h"
 
 #include <dirent.h>
-#include <errno.h>
+#include <fcntl.h>
 #include <glob.h>
-#include <stddef.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
+
+#include <cerrno>
+#include <cstddef>
 #include <fstream>
 #include <string>
 
 namespace apollo {
 namespace cyber {
 namespace common {
+
+using std::istreambuf_iterator;
+using std::string;
+using std::vector;
 
 bool SetProtoToASCIIFile(const google::protobuf::Message &message,
                          int file_descriptor) {
@@ -145,21 +154,13 @@ bool PathExists(const std::string &path) {
 
 bool DirectoryExists(const std::string &directory_path) {
   struct stat info;
-  if (stat(directory_path.c_str(), &info) != 0) {
-    return false;
-  }
-
-  if (info.st_mode & S_IFDIR) {
-    return true;
-  }
-
-  return false;
+  return stat(directory_path.c_str(), &info) == 0 && (info.st_mode & S_IFDIR);
 }
 
 std::vector<std::string> Glob(const std::string &pattern) {
   glob_t globs = {};
   std::vector<std::string> results;
-  if (0 == glob(pattern.c_str(), GLOB_TILDE, nullptr, &globs)) {
+  if (glob(pattern.c_str(), GLOB_TILDE, nullptr, &globs) == 0) {
     for (size_t i = 0; i < globs.gl_pathc; ++i) {
       results.emplace_back(globs.gl_pathv[i]);
     }
@@ -171,8 +172,17 @@ std::vector<std::string> Glob(const std::string &pattern) {
 bool CopyFile(const std::string &from, const std::string &to) {
   std::ifstream src(from, std::ios::binary);
   if (!src) {
-    AERROR << "Source path doesn't exist: " << from;
-    return false;
+    AWARN << "Source path could not be normally opened: " << from;
+    std::string command = "cp -r " + from + " " + to;
+    ADEBUG << command;
+    const int ret = std::system(command.c_str());
+    if (ret == 0) {
+      ADEBUG << "Copy success, command returns " << ret;
+      return true;
+    } else {
+      ADEBUG << "Copy error, command returns " << ret;
+      return false;
+    }
   }
 
   std::ofstream dst(to, std::ios::binary);
@@ -316,7 +326,79 @@ std::string GetFileName(const std::string &path, const bool remove_extension) {
   return path.substr(start, len);
 }
 
-std::string GetCurrentPath() { return std::string(get_current_dir_name()); }
+std::string GetCurrentPath() {
+  char tmp[PATH_MAX];
+  return getcwd(tmp, sizeof(tmp)) ? std::string(tmp) : std::string("");
+}
+
+bool GetType(const string &filename, FileType *type) {
+  struct stat stat_buf;
+  if (lstat(filename.c_str(), &stat_buf) != 0) {
+    return false;
+  }
+  if (S_ISDIR(stat_buf.st_mode) != 0) {
+    *type = TYPE_DIR;
+  } else if (S_ISREG(stat_buf.st_mode) != 0) {
+    *type = TYPE_FILE;
+  } else {
+    AWARN << "failed to get type: " << filename;
+    return false;
+  }
+  return true;
+}
+
+bool DeleteFile(const string &filename) {
+  if (!PathExists(filename)) {
+    return true;
+  }
+  FileType type;
+  if (!GetType(filename, &type)) {
+    return false;
+  }
+  if (type == TYPE_FILE) {
+    if (remove(filename.c_str()) != 0) {
+      AERROR << "failed to remove file: " << filename;
+      return false;
+    }
+    return true;
+  }
+  DIR *dir = opendir(filename.c_str());
+  if (dir == nullptr) {
+    AWARN << "failed to opendir: " << filename;
+    return false;
+  }
+  dirent *dir_info = nullptr;
+  while ((dir_info = readdir(dir)) != nullptr) {
+    if (strcmp(dir_info->d_name, ".") == 0 ||
+        strcmp(dir_info->d_name, "..") == 0) {
+      continue;
+    }
+    string temp_file = filename + "/" + string(dir_info->d_name);
+    FileType temp_type;
+    if (!GetType(temp_file, &temp_type)) {
+      AWARN << "failed to get file type: " << temp_file;
+      closedir(dir);
+      return false;
+    }
+    if (type == TYPE_DIR) {
+      DeleteFile(temp_file);
+    }
+    remove(temp_file.c_str());
+  }
+  closedir(dir);
+  remove(filename.c_str());
+  return true;
+}
+
+bool CreateDir(const string &dir) {
+  int ret = mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+  if (ret != 0) {
+    AWARN << "failed to create dir. [dir: " << dir
+          << "] [err: " << strerror(errno) << "]";
+    return false;
+  }
+  return true;
+}
 
 }  // namespace common
 }  // namespace cyber

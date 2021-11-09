@@ -17,7 +17,23 @@ if [ ! -d "$HOME/.cache" ];then
     mkdir "$HOME/.cache"
 fi
 
-IMG="nvidia/cuda:10.0-melodic-ubuntu18.04-commitv1"
+# Check nvidia-driver and GPU device.
+USE_GPU=0
+if [ -z "$(which nvidia-smi)" ]; then
+	warning "No nvidia-driver found! Use CPU."
+elif [ -z "$(nvidia-smi)" ]; then
+	warning "No GPU device found! Use CPU."
+else
+	USE_GPU=1
+fi
+
+# ROS_MASTER_URI
+ROS_ENV="-e ROS_DOMAIN_ID=$(date +%N) \
+    		 -e ROS_MASTER_URI=http://192.168.117.7:11311 \
+				 -e ROS_IP=192.168.117.7 \
+				 -e ROS_HOSTNAME=192.168.117.7"
+
+IMG="nvidia/cuda:10.0-melodic-ubuntu18.04-commitv2"
 
 CONTAINER_NAME=cuda10.0-melodic-ubuntu18.04
 
@@ -30,12 +46,10 @@ docker run -it --gpus all -d \
 		-e DOCKER_GRP=$GRP \
 		-e DOCKER_GRP_ID=$GRP_ID \
 		-e DISPLAY=$DISPLAY \
+		-e USE_GPU=${USE_GPU} \
 		-e NVIDIA_VISIBLE_DEVICES=all \
 		-e NVIDIA_DRIVER_CAPABILITIES=compute,graphics,video,utility \
-		-e ROS_DOMAIN_ID=$(date +%N) \
-    -e ROS_MASTER_URI=http:192.168.1.94:11311 \
-    -e ROS_IP=192.168.1.94 \
-    -e ROS_HOSTNAME=192.168.1.94 \
+		${ROS_ENV} \
 		-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
 		-v /media:/media \
 		-v $HOME/.cache:${DOCKER_HOME}/.cache \

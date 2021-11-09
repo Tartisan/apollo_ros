@@ -1,0 +1,3 @@
+int32 nof_objects
+int32 meas_counter
+int32 interface_version

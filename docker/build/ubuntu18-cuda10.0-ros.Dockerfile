@@ -75,3 +75,7 @@ COPY files/nppi.h /usr/local/cuda-10.0/include/
 ## 修改 bashrc 里的 ROS_MASTER_URI
 ## /usr/include/eigen3/Eigen/Core 42行改为 #include <cuda_runtime.h>
 ## 注释 /usr/local/cuda-10.0/targets/x86_64-linux/include/crt/common_functions.h 74行
+
+# libtorch-cxx11-abi-shared-with-deps-1.7.0+cu101
+
+# cmake-3.20.6-linux-x86_64

@@ -18,11 +18,11 @@
 
 #include <arpa/inet.h>
 #include <ifaddrs.h>
-#include <limits.h>
 #include <netdb.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <cstdlib>
 #include <functional>
 
 #include "cyber/common/environment.h"
@@ -38,45 +38,32 @@ AtomicHashMap<uint64_t, std::string, 256> GlobalData::service_id_map_;
 AtomicHashMap<uint64_t, std::string, 256> GlobalData::task_id_map_;
 
 namespace {
-const char* empty_str_ = "";
-char* program_path() {
-  char* path = reinterpret_cast<char*>(malloc(PATH_MAX));
-  if (path != nullptr) {
-    auto len = readlink("/proc/self/exe", path, PATH_MAX);
-    if (len == -1) {
-      free(path);
-      return nullptr;
-    }
-    path[len] = '\0';
+const std::string& kEmptyString = "";
+std::string program_path() {
+  char path[PATH_MAX];
+  auto len = readlink("/proc/self/exe", path, sizeof(path) - 1);
+  if (len == -1) {
+    return kEmptyString;
   }
-  return path;
+  path[len] = '\0';
+  return std::string(path);
 }
 }  // namespace
 
 GlobalData::GlobalData() {
   InitHostInfo();
-  CHECK(InitConfig());
+  ACHECK(InitConfig());
   process_id_ = getpid();
-  char* prog_path = program_path();
-  if (prog_path) {
+  auto prog_path = program_path();
+  if (!prog_path.empty()) {
     process_group_ = GetFileName(prog_path) + "_" + std::to_string(process_id_);
-    free(prog_path);
   } else {
     process_group_ = "cyber_default_" + std::to_string(process_id_);
   }
-  is_reality_mode_ = (config_.has_run_mode_conf() &&
-                      config_.run_mode_conf().run_mode() ==
-                          apollo::cyber::proto::RunMode::MODE_SIMULATION)
-                         ? false
-                         : true;
 
-  const char* run_mode_val = ::getenv("CYBER_RUN_MODE");
-  if (run_mode_val != nullptr) {
-    std::string run_mode_str(run_mode_val);
-    if (run_mode_str == "simulation") {
-      is_reality_mode_ = false;
-    }
-  }
+  const auto& run_mode_conf = config_.run_mode_conf();
+  run_mode_ = run_mode_conf.run_mode();
+  clock_mode_ = run_mode_conf.clock_mode();
 }
 
 GlobalData::~GlobalData() {}
@@ -88,6 +75,11 @@ void GlobalData::SetProcessGroup(const std::string& process_group) {
 }
 const std::string& GlobalData::ProcessGroup() const { return process_group_; }
 
+void GlobalData::SetComponentNums(const int component_nums) {
+  component_nums_ = component_nums;
+}
+int GlobalData::ComponentNums() const { return component_nums_; }
+
 void GlobalData::SetSchedName(const std::string& sched_name) {
   sched_name_ = sched_name;
 }
@@ -97,15 +89,23 @@ const std::string& GlobalData::HostIp() const { return host_ip_; }
 
 const std::string& GlobalData::HostName() const { return host_name_; }
 
-void GlobalData::EnableSimulationMode() { is_reality_mode_ = false; }
+void GlobalData::EnableSimulationMode() {
+  run_mode_ = RunMode::MODE_SIMULATION;
+}
 
-void GlobalData::DisableSimulationMode() { is_reality_mode_ = true; }
+void GlobalData::DisableSimulationMode() { run_mode_ = RunMode::MODE_REALITY; }
 
-bool GlobalData::IsRealityMode() const { return is_reality_mode_; }
+bool GlobalData::IsRealityMode() const {
+  return run_mode_ == RunMode::MODE_REALITY;
+}
+
+bool GlobalData::IsMockTimeMode() const {
+  return clock_mode_ == ClockMode::MODE_MOCK;
+}
 
 void GlobalData::InitHostInfo() {
   char host_name[1024];
-  gethostname(host_name, 1024);
+  gethostname(host_name, sizeof(host_name));
   host_name_ = host_name;
 
   host_ip_ = "127.0.0.1";
@@ -167,11 +167,14 @@ const CyberConfig& GlobalData::Config() const { return config_; }
 
 uint64_t GlobalData::RegisterNode(const std::string& node_name) {
   auto id = Hash(node_name);
-  if (node_id_map_.Has(id)) {
+  while (node_id_map_.Has(id)) {
     std::string* name = nullptr;
     node_id_map_.Get(id, &name);
-    CHECK(node_name == *name) << " Node name hash collision: " << node_name
-                              << " <=> " << *name;
+    if (node_name == *name) {
+      break;
+    }
+    ++id;
+    AWARN << " Node name hash collision: " << node_name << " <=> " << *name;
   }
   node_id_map_.Set(id, node_name);
   return id;
@@ -182,16 +185,19 @@ std::string GlobalData::GetNodeById(uint64_t id) {
   if (node_id_map_.Get(id, &node_name)) {
     return *node_name;
   }
-  return empty_str_;
+  return kEmptyString;
 }
 
 uint64_t GlobalData::RegisterChannel(const std::string& channel) {
   auto id = Hash(channel);
-  if (channel_id_map_.Has(id)) {
+  while (channel_id_map_.Has(id)) {
     std::string* name = nullptr;
     channel_id_map_.Get(id, &name);
-    CHECK(channel == *name) << "Channel name hash collision: " << channel
-                            << " <=> " << *name;
+    if (channel == *name) {
+      break;
+    }
+    ++id;
+    AWARN << "Channel name hash collision: " << channel << " <=> " << *name;
   }
   channel_id_map_.Set(id, channel);
   return id;
@@ -202,16 +208,19 @@ std::string GlobalData::GetChannelById(uint64_t id) {
   if (channel_id_map_.Get(id, &channel)) {
     return *channel;
   }
-  return empty_str_;
+  return kEmptyString;
 }
 
 uint64_t GlobalData::RegisterService(const std::string& service) {
   auto id = Hash(service);
-  if (service_id_map_.Has(id)) {
+  while (service_id_map_.Has(id)) {
     std::string* name = nullptr;
     service_id_map_.Get(id, &name);
-    CHECK(service == *name) << "Service name hash collision: " << service
-                            << " <=> " << *name;
+    if (service == *name) {
+      break;
+    }
+    ++id;
+    AWARN << "Service name hash collision: " << service << " <=> " << *name;
   }
   service_id_map_.Set(id, service);
   return id;
@@ -222,16 +231,19 @@ std::string GlobalData::GetServiceById(uint64_t id) {
   if (service_id_map_.Get(id, &service)) {
     return *service;
   }
-  return empty_str_;
+  return kEmptyString;
 }
 
 uint64_t GlobalData::RegisterTaskName(const std::string& task_name) {
   auto id = Hash(task_name);
-  if (task_id_map_.Has(id)) {
+  while (task_id_map_.Has(id)) {
     std::string* name = nullptr;
     task_id_map_.Get(id, &name);
-    CHECK(task_name == *name) << "Task name hash collision: " << task_name
-                              << " <=> " << *name;
+    if (task_name == *name) {
+      break;
+    }
+    ++id;
+    AWARN << "Task name hash collision: " << task_name << " <=> " << *name;
   }
   task_id_map_.Set(id, task_name);
   return id;
@@ -242,7 +254,7 @@ std::string GlobalData::GetTaskNameById(uint64_t id) {
   if (task_id_map_.Get(id, &task_name)) {
     return *task_name;
   }
-  return empty_str_;
+  return kEmptyString;
 }
 
 }  // namespace common

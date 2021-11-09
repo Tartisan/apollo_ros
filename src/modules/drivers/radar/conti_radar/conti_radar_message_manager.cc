@@ -22,6 +22,7 @@
 #include "modules/drivers/radar/conti_radar/conti_radar_message_manager.h"
 
 #include "modules/common/util/message_util.h"
+#include "modules/tools/data_conversion/convert.h"
 #include "modules/drivers/radar/conti_radar/protocol/cluster_general_info_701.h"
 #include "modules/drivers/radar/conti_radar/protocol/cluster_list_status_600.h"
 #include "modules/drivers/radar/conti_radar/protocol/cluster_quality_info_702.h"
@@ -35,8 +36,14 @@ namespace apollo {
 namespace drivers {
 namespace conti_radar {
 
-ContiRadarMessageManager::ContiRadarMessageManager(
-    const std::shared_ptr<Writer<ContiRadar>> &writer)
+using Time = apollo::cyber::Time;
+using micros = std::chrono::microseconds;
+// using apollo::cyber::Writer;
+using apollo::drivers::canbus::CanClient;
+using apollo::drivers::canbus::ProtocolData;
+using apollo::drivers::canbus::SenderMessage;
+
+ContiRadarMessageManager::ContiRadarMessageManager(ros::Publisher *writer)
     : conti_radar_writer_(writer) {
   AddRecvProtocolData<RadarState201, true>();
   AddRecvProtocolData<ClusterListStatus600, true>();
@@ -91,7 +98,10 @@ void ContiRadarMessageManager::Parse(const uint32_t message_id,
     if (sensor_data_.contiobs_size() <=
         sensor_data_.object_list_status().nof_objects()) {
       // maybe lost a object_list_status msg
-      conti_radar_writer_->Write(std::make_shared<ContiRadar>(sensor_data_));
+      // conti_radar_writer_->Write(std::make_shared<ContiRadar>(sensor_data_));
+      ::drivers::ContiRadar msg;
+      ConvertContiRadarFromPbToRos(&sensor_data_, &msg);
+      conti_radar_writer_->publish(msg);
     }
     sensor_data_.Clear();
     // fill header when recieve the general info message
@@ -128,7 +138,7 @@ void ContiRadarMessageManager::Parse(const uint32_t message_id,
   // check if need to check period
   const auto it = check_ids_.find(message_id);
   if (it != check_ids_.end()) {
-    const int64_t time = common::time::AsInt64<micros>(Clock::Now());
+    const int64_t time = Time::Now().ToMicrosecond();
     it->second.real_period = time - it->second.last_time;
     // if period 1.5 large than base period, inc error_count
     const double period_multiplier = 1.5;

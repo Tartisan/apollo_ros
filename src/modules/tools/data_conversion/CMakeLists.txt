@@ -3,18 +3,13 @@ project(data_conversion)
 
 set(${PROJECT_NAME}_CATKIN_DEPS
   roscpp
-  rosbag 
-  # pcl_ros
+  rosbag
   sensor_msgs
   geometry_msgs
-  # tf
-  # tf_conversions
-  # cv_bridge
 )
 
 find_package(catkin REQUIRED COMPONENTS
   ${${PROJECT_NAME}_CATKIN_DEPS}
-  # pcl_conversions
 )
 
 catkin_package(
@@ -30,11 +25,8 @@ include_directories(
 
 link_directories(${CMAKE_SOURCE_DIR}/../devel/lib/) 
 
-add_executable(rosbag_to_record
-  rosbag_to_record/channel_info.cc
-  rosbag_to_record/rosbag_to_record.cc
-)
-target_link_libraries(rosbag_to_record
+add_library(conversion convert.cc)
+target_link_libraries(conversion
   ${catkin_LIBRARIES}
   cyber
   cyber_proto
@@ -45,3 +37,12 @@ target_link_libraries(rosbag_to_record
   perception_proto
   transform_proto
 )
+add_dependencies(conversion localization_generate_messages drivers_generate_messages)
+
+# rosbag_to_record
+add_executable(rosbag_to_record rosbag_to_record.cc channel_info.cc)
+target_link_libraries(rosbag_to_record conversion)
+
+# record_to_rosbag
+add_executable(record_to_rosbag record_to_rosbag.cc)
+target_link_libraries(record_to_rosbag conversion)
