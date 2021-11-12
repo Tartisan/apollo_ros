@@ -56,6 +56,9 @@ void ConvertPointCloudFromRosToPb(
     std::shared_ptr<apollo::drivers::PointCloud> pb);
 void ConvertImageFromRosToPb(sensor_msgs::Image::ConstPtr msg,
                              std::shared_ptr<apollo::drivers::Image> pb);
+void ConvertCompressedImageFromRosToPb(
+    sensor_msgs::CompressedImage::ConstPtr msg, 
+    std::shared_ptr<apollo::drivers::CompressedImage> pb);
 void ConvertTransformStampedsFromRosToPb(
     tf2_msgs::TFMessageConstPtr msg,
     std::shared_ptr<apollo::transform::TransformStampeds> pb);

@@ -38,10 +38,24 @@ inline std::string GetEnv(const std::string& var_name,
 }
 
 inline const std::string WorkRoot() {
-  std::string work_root = GetEnv("CYBER_PATH", 
-                                 "/work/share/apollo_ros/src/cyber");
+  std::string cyber_pkg_path = "";
+  FILE *pp = popen("rospack find cyber", "r"); //建立管道
+  if (!pp) {
+    AERROR << "Can't rospack find cyber";
+    exit(1);
+  }
+  char tmp[1024]; //设置一个合适的长度，以存储每一行输出
+  while (fgets(tmp, sizeof(tmp), pp) != NULL) {
+    if (tmp[strlen(tmp) - 1] == '\n') {
+      tmp[strlen(tmp) - 1] = '\0'; //去除换行符
+    }
+    cyber_pkg_path = tmp;
+  }
+  pclose(pp); //关闭管道
+
+  std::string work_root = GetEnv("CYBER_PATH", cyber_pkg_path);
   if (work_root.empty()) {
-    work_root = "/apollo/cyber";
+    work_root = cyber_pkg_path;
   }
   return work_root;
 }

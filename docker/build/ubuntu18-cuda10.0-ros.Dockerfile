@@ -72,10 +72,10 @@ COPY files/toplevel.cmake /opt/ros/melodic/share/catkin/cmake/toplevel.cmake
 COPY files/nppdefs.h /usr/local/cuda-10.0/include/ 
 COPY files/nppi.h /usr/local/cuda-10.0/include/ 
 
-## 修改 bashrc 里的 ROS_MASTER_URI
+## TODO:
 ## /usr/include/eigen3/Eigen/Core 42行改为 #include <cuda_runtime.h>
 ## 注释 /usr/local/cuda-10.0/targets/x86_64-linux/include/crt/common_functions.h 74行
 
-# libtorch-cxx11-abi-shared-with-deps-1.7.0+cu101
+## libtorch-cxx11-abi-shared-with-deps-1.7.0+cu101 解压放到 /usr/local/
 
-# cmake-3.20.6-linux-x86_64
+## cmake-3.20.6-linux-x86_64

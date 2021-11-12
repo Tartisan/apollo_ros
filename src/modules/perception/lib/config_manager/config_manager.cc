@@ -29,31 +29,8 @@ using cyber::common::GetAbsolutePath;
 using cyber::common::GetProtoFromASCIIFile;
 
 ConfigManager::ConfigManager() {
-  // work_root_ = FLAGS_work_root;
-
-  // // For start at arbitrary path
-  // if (work_root_.empty()) {
-  //   work_root_ = cyber::common::GetEnv("MODULE_PATH");
-  //   if (work_root_.empty()) {
-  //     work_root_ = cyber::common::GetEnv("CYBER_PATH");
-  //   }
-  // }
-
-  std::string cyber_package_path;
-  FILE *pp = popen("rospack find cyber", "r"); //建立管道
-  if (!pp) {
-    AERROR << "Can't rospack find cyber";
-    exit(1);
-  }
-  char tmp[1024]; //设置一个合适的长度，以存储每一行输出
-  while (fgets(tmp, sizeof(tmp), pp) != NULL) {
-    if (tmp[strlen(tmp) - 1] == '\n') {
-      tmp[strlen(tmp) - 1] = '\0'; //去除换行符
-    }
-    cyber_package_path = tmp;
-  }
-  pclose(pp); //关闭管道
-  work_root_ = cyber_package_path + "/../configs";
+  const std::string cyber_pkg_path = cyber::common::WorkRoot();
+  work_root_ = cyber_pkg_path + "/../configs";
   InitConfigPath();
 }
 

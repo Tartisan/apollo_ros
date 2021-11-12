@@ -123,6 +123,11 @@ int main(int argc, char **argv) {
       auto pb = std::make_shared<apollo::drivers::Image>();
       ConvertImageFromRosToPb(msg, pb);
       pb->SerializeToString(&serialized_str);
+    } else if (channel_name.find("image/compressed") != std::string::npos) {
+      auto msg = m.instantiate<sensor_msgs::CompressedImage>();
+      auto pb = std::make_shared<apollo::drivers::CompressedImage>();
+      ConvertCompressedImageFromRosToPb(msg, pb);
+      pb->SerializeToString(&serialized_str);
     } else if (channel_name == "/tf" || channel_name == "/tf_static") {
       auto msg = m.instantiate<tf2_msgs::TFMessage>();
       auto pb = std::make_shared<apollo::transform::TransformStampeds>();
@@ -142,11 +147,11 @@ int main(int argc, char **argv) {
 
   record_writer->Close();
   record_writer = nullptr;
-  std::cout << "Info of record file" << std::endl;
-  std::string command_line = "cyber_recorder info " + record_file_name;
-  int res = system(command_line.c_str());
+  // std::cout << "Info of record file" << std::endl;
+  // std::string command_line = "cyber_recorder info " + record_file_name;
+  // int res = system(command_line.c_str());
 
   std::cout << "Convertion finished! Took " << ros::Time::now() - start_time
             << " seconds in total." << std::endl;
-  return res;
+  return 0;
 }

@@ -73,6 +73,18 @@ void ConvertImageFromRosToPb(sensor_msgs::Image::ConstPtr msg,
   }
 }
 
+void ConvertCompressedImageFromRosToPb(
+    sensor_msgs::CompressedImage::ConstPtr msg, 
+    std::shared_ptr<apollo::drivers::CompressedImage> pb) {
+  auto header = pb->mutable_header();
+  header->set_timestamp_sec(msg->header.stamp.toSec());
+  header->set_frame_id(msg->header.frame_id);
+  pb->set_frame_id(msg->header.frame_id);
+  pb->set_measurement_time(msg->header.stamp.toSec());
+  pb->set_format(msg->format);
+  pb->set_data((const void *)&msg->data[0], msg->data.size());
+}
+
 void ConvertTransformStampedsFromRosToPb(
     tf2_msgs::TFMessageConstPtr msg,
     std::shared_ptr<apollo::transform::TransformStampeds> pb) {
