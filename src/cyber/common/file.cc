@@ -331,6 +331,13 @@ std::string GetCurrentPath() {
   return getcwd(tmp, sizeof(tmp)) ? std::string(tmp) : std::string("");
 }
 
+std::string CarConfigFilePath() {
+  cyber::proto::Param param_proto;
+  std::string configs_path = WorkRoot() + "/../configs/";
+  GetProtoFromASCIIFile(configs_path + "car_name.conf", &param_proto);
+  return configs_path + param_proto.string_value();
+}
+
 bool GetType(const string &filename, FileType *type) {
   struct stat stat_buf;
   if (lstat(filename.c_str(), &stat_buf) != 0) {

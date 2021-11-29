@@ -19,10 +19,10 @@ namespace apollo {
 namespace perception {
 namespace onboard {
 
-class FusionCameraDetection {
+class FusionCameraDetectionComponent {
 public:
-  FusionCameraDetection(ros::NodeHandle node, ros::NodeHandle private_nh);
-  ~FusionCameraDetection() {}
+  FusionCameraDetectionComponent(ros::NodeHandle node, ros::NodeHandle private_nh);
+  ~FusionCameraDetectionComponent() {}
 
 private:
   void OnReceiveImage(const sensor_msgs::ImageConstPtr &msg,

@@ -1,7 +1,7 @@
 add_subdirectory(proto)
 
 add_executable(conti_radar
-  conti_radar_canbus_component_node.cc
+  conti_radar_canbus_node.cc
   conti_radar_canbus_component.cc
   conti_radar_message_manager.cc
   # protocol

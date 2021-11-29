@@ -3,7 +3,7 @@ can_conf {
   can_card_parameter {
     brand:SOCKET_CAN_RAW
     type: PCI_CARD
-    channel_id: CHANNEL_ID_ZERO
+    channel_id: CHANNEL_ID_ONE
   }
 
   enable_debug_mode: false
@@ -22,7 +22,7 @@ radar_conf {
   ctrl_relay_valid: false
   rcs_threshold_valid: true
 
-  max_distance: 250
+  max_distance: 200
   sensor_id: 0
   output_type: OUTPUT_TYPE_OBJECTS
   radar_power: 0
@@ -33,8 +33,8 @@ radar_conf {
   store_in_nvm: 1
   rcs_threshold: RCS_THRESHOLD_STANDARD
 
-  # unit: nanoseconds, 20ms for 50hz
-  input_send_interval: 20000000 
+  # unit: nanoseconds, 20ms for 50Hz
+  input_send_interval: 20000000
 }
 
-radar_channel: "/apollo/sensor/radar/front"
+radar_channel: "/apollo/sensor/radar/front_left"

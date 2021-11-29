@@ -3,8 +3,8 @@
 [Apollo](https://github.com/ApolloAuto/apollo) is the most mature and sophisticated autonomous driving platform that is open source right now. 
 
 However, there are some limitations.
-  * If you want to understand their code and test it with your own application, you will need to have a good understanding of their framework before you can make any modifications.
-  * The rviz and rqt tools are absent or awkward to use
+* If you want to understand their code and test it with your own application, you will need to have a good understanding of their framework before you can make any modifications.
+* The rviz and rqt tools are absent or awkward to use
 
 Have you wondered, what if **everything can be run as a standard ROS node** and you can use all the familiar tools that are available in ROS? Then this repository is what you need!
 
@@ -15,10 +15,16 @@ You can build this project under CPU-Only machine(which only build  those parts 
 
 The system is also tested on GPU machine including Nvidia GeForce GTX 1080 Ti and 2070 Super. Please install **Nvidia Driver**, [**Docker**](https://docs.docker.com/install/linux/docker-ce/ubuntu/), and **nvidia-container-toolkit**. The build process of docker image could reference to [ubuntu18-cuda10.0-ros.Dockerfile](docker/build/ubuntu18-cuda10.0-ros.Dockerfile)
 
-| **Dependencies**                  	| Image Environment  	|
-|-----------------------------------	|--------------------	|
-| Nvidia Driver (Tested on 460.91) 	  | Ubuntu 18.04       	|
-| Nvidia Docker       	              | Cuda10.0 Cudnn7.5.0	|
+**Dependencies**
+```
+Ubuntu 18.04
+Nvidia Driver 460.91
+CUDA 10.0
+Cudnn 7.5.0
+TensorRT 5.1.5
+libtorch 1.7.0
+cmake 3.20 # recommended
+```
 
 ## Building and Running
 1. Clone Repository in Host
@@ -42,12 +48,16 @@ bash apollo.sh build
 source devel/setup.bash
 ```
 
-5. Launch The Ros Node you want to use
-```
-rosrun drivers conti_radar
-rosrun perception fusion_camera_detection
-rosrun data_conversion record_to_rosbag
-```
+5. rosrun the node you want to use
+
+| package               | node  	                |
+|-------------------    |--------------------	    |
+| perception       	    | fusion_camera_detection	|
+| drivers 	            | conti_radar               |
+| transform       	    | static_transform	        |
+| data_conversion       | record_to_rosbag	        |
+| data_conversion       | rosbag_to_record	        |
+| sensor_visualizer     | viz_conti_radar	        |
 
 6. rosbag for demo
 ```

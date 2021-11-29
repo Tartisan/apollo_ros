@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+	<name>sensor_visualizer</name>
+	<version>0.0.0</version>
+	<description>The sensor_visualizer package</description>
+	<maintainer email="apollo@todo.todo">apollo</maintainer>
+	<license>TODO</license>
+
+	<buildtool_depend>catkin</buildtool_depend>
+	<build_depend>roscpp</build_depend> 
+	<build_depend>std_msgs</build_depend> 
+	<build_depend>drivers</build_depend> 
+
+	<run_depend>roscpp</run_depend> 
+	<run_depend>std_msgs</run_depend> 
+	<run_depend>drivers</run_depend> 
+
+	<!-- The export tag contains other, unspecified, tags -->
+	<export>
+		<!-- Other tools can request additional information be placed here -->
+	</export>
+</package>

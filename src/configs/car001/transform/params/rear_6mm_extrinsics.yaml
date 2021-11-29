@@ -1,0 +1,21 @@
+header:
+  seq: 0
+  stamp:
+    secs: 0
+    nsecs: 0
+  frame_id: novatel
+child_frame_id: rear_6mm
+transform:
+  translation:
+    x: 0
+    y: 0.55
+    z: 0.685
+  rotation:
+     x: 0
+     y: 0
+     z: 0
+     w: 1
+  euler_angles_degree:
+     pitch: 0
+     yaw: 0
+     roll: 0

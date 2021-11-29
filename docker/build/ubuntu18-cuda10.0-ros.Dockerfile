@@ -51,7 +51,7 @@ RUN tar -xf /root/protobuf-3.5.1.1.tar.gz -C /root && \
     ldconfig && \
     rm -rf /root/protobuf-3.5.1.1*
 
-### ----------------fix bug while compiling avos3.0------------------
+
 ### 1. install gflags, serial, glog
 ### 2. solve libcudnn.so.7 is not a symbolic link
 ### 3. add c++11 for toplevel.cmake 

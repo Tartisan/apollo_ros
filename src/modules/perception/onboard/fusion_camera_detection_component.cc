@@ -3,14 +3,14 @@
 #include "cyber/common/file.h"
 #include "cyber/common/log.h"
 #include "modules/perception/lib/config_manager/config_manager.h"
-#include "modules/perception/onboard/fusion_camera_detection.h"
+#include "modules/perception/onboard/fusion_camera_detection_component.h"
 
 namespace apollo {
 namespace perception {
 namespace onboard {
 
-FusionCameraDetection::FusionCameraDetection(ros::NodeHandle node,
-                                             ros::NodeHandle private_nh) {
+FusionCameraDetectionComponent::FusionCameraDetectionComponent(
+    ros::NodeHandle node, ros::NodeHandle private_nh) {
   // ros parameters
   node.param("use_camera_short", use_camera_short_, true);
   node.param("use_camera_long", use_camera_long_, false);
@@ -25,11 +25,11 @@ FusionCameraDetection::FusionCameraDetection(ros::NodeHandle node,
   // subscribe
   sub_camera_short_ = node.subscribe<sensor_msgs::Image>(
       camera_short_topic_, 2,
-      std::bind(&FusionCameraDetection::OnReceiveImage, this,
+      std::bind(&FusionCameraDetectionComponent::OnReceiveImage, this,
                 std::placeholders::_1, "front_6mm"));
   sub_camera_long_ = node.subscribe<sensor_msgs::Image>(
       camera_long_topic_, 2,
-      std::bind(&FusionCameraDetection::OnReceiveImage, this,
+      std::bind(&FusionCameraDetectionComponent::OnReceiveImage, this,
                 std::placeholders::_1, "front_12mm"));
   // publish
   pub_camera_obs_image_ = node.advertise<sensor_msgs::Image>(
@@ -82,7 +82,7 @@ FusionCameraDetection::FusionCameraDetection(ros::NodeHandle node,
   }
 }
 
-int FusionCameraDetection::InitAlgorithmPlugin() {
+int FusionCameraDetectionComponent::InitAlgorithmPlugin() {
   camera_obstacle_pipeline_.reset(new camera::ObstacleCameraPerception);
   if (!camera_obstacle_pipeline_->Init(camera_perception_init_options_)) {
     AERROR << "camera_obstacle_pipeline_->Init() failed";
@@ -92,7 +92,7 @@ int FusionCameraDetection::InitAlgorithmPlugin() {
   return 0;
 }
 
-int FusionCameraDetection::InitCameraFrames() {
+int FusionCameraDetectionComponent::InitCameraFrames() {
   if (camera_names_.size() != 2) {
     AERROR << "invalid camera_names_.size(): " << camera_names_.size();
     return -1;
@@ -157,7 +157,7 @@ int FusionCameraDetection::InitCameraFrames() {
   return 0;
 }
 
-int FusionCameraDetection::InitProjectMatrix() {
+int FusionCameraDetectionComponent::InitProjectMatrix() {
   if (!GetProjectMatrix(camera_names_, extrinsic_map_, intrinsic_map_,
                         &project_matrix_, &pitch_diff_)) {
     AERROR << "GetProjectMatrix failed";
@@ -172,10 +172,10 @@ int FusionCameraDetection::InitProjectMatrix() {
   return 0;
 }
 
-int FusionCameraDetection::InitMotionService() {
+int FusionCameraDetectionComponent::InitMotionService() {
   const std::string &channel_name_local = "/apollo/perception/motion_service";
   // std::function<void(const MotionServiceMsgType &)> motion_service_callback =
-  //     std::bind(&FusionCameraDetection::OnMotionService, this,
+  //     std::bind(&FusionCameraDetectionComponent::OnMotionService, this,
   //               std::placeholders::_1);
   // auto motion_service_reader =
   //     node_->CreateReader(channel_name_local, motion_service_callback);
@@ -188,13 +188,13 @@ int FusionCameraDetection::InitMotionService() {
   return 0;
 }
 
-void FusionCameraDetection::SetCameraHeightAndPitch() {
+void FusionCameraDetectionComponent::SetCameraHeightAndPitch() {
   camera_obstacle_pipeline_->SetCameraHeightAndPitch(
       camera_height_map_, name_camera_pitch_angle_diff_map_,
       default_camera_pitch_);
 }
 
-void FusionCameraDetection::OnReceiveImage(
+void FusionCameraDetectionComponent::OnReceiveImage(
     const sensor_msgs::ImageConstPtr &message, const std::string &camera_name) {
   AINFO << "====================";
   AINFO << "Received msg from camera " << camera_name;
@@ -253,8 +253,8 @@ void FusionCameraDetection::OnReceiveImage(
 }
 
 // @description: load camera extrinsics from yaml file
-bool FusionCameraDetection::LoadExtrinsics(const std::string &yaml_file,
-                                           Eigen::Matrix4d *camera_extrinsic) {
+bool FusionCameraDetectionComponent::LoadExtrinsics(
+    const std::string &yaml_file, Eigen::Matrix4d *camera_extrinsic) {
   if (!cyber::common::PathExists(yaml_file)) {
     AINFO << yaml_file << " does not exist!";
     return false;
@@ -306,10 +306,9 @@ bool FusionCameraDetection::LoadExtrinsics(const std::string &yaml_file,
   return true;
 }
 
-bool FusionCameraDetection::SetCameraHeight(const std::string &sensor_name,
-                                            const std::string &params_dir,
-                                            float default_camera_height,
-                                            float *camera_height) {
+bool FusionCameraDetectionComponent::SetCameraHeight(
+    const std::string &sensor_name, const std::string &params_dir,
+    float default_camera_height, float *camera_height) {
   float base_h = default_camera_height;
   float camera_offset = 0.0f;
 
@@ -346,7 +345,7 @@ bool FusionCameraDetection::SetCameraHeight(const std::string &sensor_name,
 }
 
 // @description: get project matrix
-bool FusionCameraDetection::GetProjectMatrix(
+bool FusionCameraDetectionComponent::GetProjectMatrix(
     const std::vector<std::string> &camera_names,
     const std::map<std::string, Eigen::Matrix4d> &extrinsic_map,
     const std::map<std::string, Eigen::Matrix3f> &intrinsic_map,

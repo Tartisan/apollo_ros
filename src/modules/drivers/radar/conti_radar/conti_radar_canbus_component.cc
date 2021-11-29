@@ -44,12 +44,13 @@ ContiRadarCanbusComponent::~ContiRadarCanbusComponent() { Stop(); }
 
 bool ContiRadarCanbusComponent::Init(ros::NodeHandle nh,
                                      ros::NodeHandle private_nh) {
+  std::string car_path = cyber::common::CarConfigFilePath();
   // ros parameters
   std::string config_file_path;
-  nh.param("config_file_path", config_file_path,
-           std::string("radar/conti_radar/conf/radar_front_conf.pb.txt"));
-  std::string drivers = ros::package::getPath("drivers");
-  if (!cyber::common::GetProtoFromFile(drivers + "/" + config_file_path,
+  nh.param(
+      "config_file_path", config_file_path,
+      std::string("/drivers/conti_radar/conf/radar_front_left_conf.pb.txt"));
+  if (!cyber::common::GetProtoFromFile(car_path + config_file_path,
                                        &conti_radar_conf_)) {
     return OnError("Unable to load conti_radar conf file: " + config_file_path);
   }

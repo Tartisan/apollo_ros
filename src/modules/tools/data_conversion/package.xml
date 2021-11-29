@@ -3,7 +3,7 @@
   <name>data_conversion</name>
   <version>0.0.0</version>
   <description>The data_conversion package</description>
-  <maintainer email="parallels@todo.todo">parallels</maintainer>
+  <maintainer email="apollo@todo.todo">apollo</maintainer>
   <license>TODO</license>
 
   <buildtool_depend>catkin</buildtool_depend>

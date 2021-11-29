@@ -3,7 +3,7 @@
   <name>perception</name>
   <version>0.0.0</version>
   <description>The perception package</description>
-  <maintainer email="idriver@todo.todo">idriver</maintainer>
+  <maintainer email="apollo@todo.todo">apollo</maintainer>
   <license>TODO</license>
 
   <buildtool_depend>catkin</buildtool_depend>

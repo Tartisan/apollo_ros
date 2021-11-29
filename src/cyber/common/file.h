@@ -36,6 +36,8 @@
 #include "google/protobuf/text_format.h"
 
 #include "cyber/common/log.h"
+#include "cyber/common/environment.h"
+#include "cyber/proto/parameter.pb.h"
 
 /**
  * @namespace apollo::common::util
@@ -194,6 +196,8 @@ std::string GetFileName(const std::string &path,
                         const bool remove_extension = false);
 
 std::string GetCurrentPath();
+
+std::string CarConfigFilePath();
 
 // delete file including file or directory
 bool DeleteFile(const std::string &filename);

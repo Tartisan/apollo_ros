@@ -3,7 +3,7 @@
   <name>launch</name>
   <version>0.0.0</version>
   <description>The launch package</description>
-  <maintainer email="wangtao11@baidu.com">wangtao</maintainer>
+  <maintainer email="apollo@todo.todo">apollo</maintainer>
   <license>TODO</license>
 
   <buildtool_depend>catkin</buildtool_depend>

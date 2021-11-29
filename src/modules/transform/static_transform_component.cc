@@ -15,66 +15,66 @@
  *****************************************************************************/
 
 #include "modules/transform/static_transform_component.h"
-
+#include "cyber/common/environment.h"
+#include "cyber/common/file.h"
 #include "yaml-cpp/yaml.h"
 
 namespace apollo {
 namespace transform {
 
 bool StaticTransformComponent::Init() {
-  if (!GetProtoConfig(&conf_)) {
-    AERROR << "Parse conf file failed, " << ConfigFilePath();
+  car_path_ = cyber::common::CarConfigFilePath();
+  std::string config_file_path =
+      car_path_ + "/transform/conf/static_transform_conf.pb.txt";
+  if (!cyber::common::GetProtoFromFile(config_file_path, &conf_)) {
+    AERROR << "Parse conf file failed, " << config_file_path;
     return false;
   }
-  cyber::proto::RoleAttributes attr;
-  attr.set_channel_name("/tf_static");
-  attr.mutable_qos_profile()->CopyFrom(
-      cyber::transport::QosProfileConf::QOS_PROFILE_TF_STATIC);
-  writer_ = node_->CreateWriter<TransformStampeds>(attr);
+  AINFO << "The static_transform conf file is loaded: " << config_file_path;
+
   SendTransforms();
   return true;
 }
 
 void StaticTransformComponent::SendTransforms() {
-  std::vector<TransformStamped> tranform_stamped_vec;
-  for (auto& extrinsic_file : conf_.extrinsic_file()) {
+  for (auto &extrinsic_file : conf_.extrinsic_file()) {
     if (extrinsic_file.enable()) {
       AINFO << "Broadcast static transform, frame id ["
             << extrinsic_file.frame_id() << "], child frame id ["
             << extrinsic_file.child_frame_id() << "]";
-      TransformStamped transform;
-      if (ParseFromYaml(extrinsic_file.file_path(), &transform)) {
-        tranform_stamped_vec.emplace_back(transform);
-      }
+      SendTransform(car_path_ + extrinsic_file.file_path());
     }
   }
-  SendTransform(tranform_stamped_vec);
 }
 
-bool StaticTransformComponent::ParseFromYaml(
-    const std::string& file_path, TransformStamped* transform_stamped) {
+bool StaticTransformComponent::SendTransform(const std::string &file_path) {
   if (!cyber::common::PathExists(file_path)) {
     AERROR << "Extrinsic yaml file is noe exists: " << file_path;
     return false;
   }
   YAML::Node tf = YAML::LoadFile(file_path);
   try {
-    transform_stamped->mutable_header()->set_frame_id(
-        tf["header"]["frame_id"].as<std::string>());
-    transform_stamped->set_child_frame_id(
-        tf["child_frame_id"].as<std::string>());
-    // translation
-    auto translation =
-        transform_stamped->mutable_transform()->mutable_translation();
-    translation->set_x(tf["transform"]["translation"]["x"].as<double>());
-    translation->set_y(tf["transform"]["translation"]["y"].as<double>());
-    translation->set_z(tf["transform"]["translation"]["z"].as<double>());
+    static tf2_ros::StaticTransformBroadcaster static_broadcaster;
+    geometry_msgs::TransformStamped transform_stamped;
+    transform_stamped.header.stamp = ros::Time::now();
+    transform_stamped.header.frame_id =
+        tf["header"]["frame_id"].as<std::string>();
+    transform_stamped.child_frame_id = tf["child_frame_id"].as<std::string>();
+    // translatiion
+    geometry_msgs::Vector3 translation;
+    translation.x = tf["transform"]["translation"]["x"].as<double>();
+    translation.y = tf["transform"]["translation"]["y"].as<double>();
+    translation.z = tf["transform"]["translation"]["z"].as<double>();
     // rotation
-    auto rotation = transform_stamped->mutable_transform()->mutable_rotation();
-    rotation->set_qx(tf["transform"]["rotation"]["x"].as<double>());
-    rotation->set_qy(tf["transform"]["rotation"]["y"].as<double>());
-    rotation->set_qz(tf["transform"]["rotation"]["z"].as<double>());
-    rotation->set_qw(tf["transform"]["rotation"]["w"].as<double>());
+    geometry_msgs::Quaternion rotation;
+    rotation.x = tf["transform"]["rotation"]["x"].as<double>();
+    rotation.y = tf["transform"]["rotation"]["y"].as<double>();
+    rotation.z = tf["transform"]["rotation"]["z"].as<double>();
+    rotation.w = tf["transform"]["rotation"]["w"].as<double>();
+
+    transform_stamped.transform.translation = translation;
+    transform_stamped.transform.rotation = rotation;
+    static_broadcaster.sendTransform(transform_stamped);
   } catch (...) {
     AERROR << "Extrinsic yaml file parse failed: " << file_path;
     return false;
@@ -82,28 +82,5 @@ bool StaticTransformComponent::ParseFromYaml(
   return true;
 }
 
-void StaticTransformComponent::SendTransform(
-    const std::vector<TransformStamped>& msgtf) {
-  for (auto it_in = msgtf.begin(); it_in != msgtf.end(); ++it_in) {
-    bool match_found = false;
-    int size = transform_stampeds_.transforms_size();
-
-    for (int i = 0; i < size; ++i) {
-      if (it_in->child_frame_id() ==
-          transform_stampeds_.mutable_transforms(i)->child_frame_id()) {
-        auto it_msg = transform_stampeds_.mutable_transforms(i);
-        *it_msg = *it_in;
-        match_found = true;
-        break;
-      }
-    }
-    if (!match_found) {
-      auto ts = transform_stampeds_.add_transforms();
-      *ts = *it_in;
-    }
-  }
-  writer_->Write(std::make_shared<TransformStampeds>(transform_stampeds_));
-}
-
-}  // namespace transform
-}  // namespace apollo
+} // namespace transform
+} // namespace apollo

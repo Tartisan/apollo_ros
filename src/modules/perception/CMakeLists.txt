@@ -98,7 +98,7 @@ if(NOT NO_GPU)
   ################# executable ################
   add_executable(fusion_camera_detection 
     onboard/fusion_camera_detection_node.cc 
-    onboard/fusion_camera_detection.cc
+    onboard/fusion_camera_detection_component.cc
   )
   target_link_libraries(fusion_camera_detection 
     ${catkin_LIBRARIES}

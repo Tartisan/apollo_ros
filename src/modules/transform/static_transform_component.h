@@ -20,32 +20,33 @@
 #include <string>
 #include <vector>
 
-#include "cyber/component/component.h"
+// #include "cyber/component/component.h"
 #include "modules/transform/proto/static_transform_conf.pb.h"
-#include "modules/transform/proto/transform.pb.h"
+// #include "modules/transform/proto/transform.pb.h"
+#include <geometry_msgs/TransformStamped.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/static_transform_broadcaster.h>
 
 namespace apollo {
 namespace transform {
 
-class StaticTransformComponent final : public apollo::cyber::Component<> {
- public:
-  StaticTransformComponent() = default;
-  ~StaticTransformComponent() = default;
+class StaticTransformComponent {
+public:
+  StaticTransformComponent() {}
+  ~StaticTransformComponent() {}
 
- public:
-  bool Init() override;
+public:
+  bool Init();
 
- private:
+private:
   void SendTransforms();
-  void SendTransform(const std::vector<TransformStamped>& msgtf);
-  bool ParseFromYaml(const std::string& file_path, TransformStamped* transform);
+  bool SendTransform(const std::string &file_path);
 
+  std::string car_path_;
   apollo::static_transform::Conf conf_;
-  std::shared_ptr<cyber::Writer<TransformStampeds>> writer_;
-  TransformStampeds transform_stampeds_;
 };
 
-CYBER_REGISTER_COMPONENT(StaticTransformComponent)
+// CYBER_REGISTER_COMPONENT(StaticTransformComponent)
 
-}  // namespace transform
-}  // namespace apollo
+} // namespace transform
+} // namespace apollo

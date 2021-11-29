@@ -1,8 +1,8 @@
 #/bin/bash
 CONTAINER_NAME=cuda10.0-melodic-ubuntu18.04
-docker stop $CONTAINER_NAME
-docker rm $CONTAINER_NAME
-sleep 2
+docker stop $CONTAINER_NAME > /dev/null
+docker rm $CONTAINER_NAME > /dev/null
+sleep 1
 
 USER_ID=$(id -u)
 GRP=$(id -g -n)

@@ -166,17 +166,7 @@ bool ConfigManager::InitConfigPath() {
   if (inited_) {
     return true;
   }
-  if (!LodeModelConfigFile(work_root_ + "/car_select.conf")) {
-    return false;
-  }
-  const ModelConfig *model_config = nullptr;
-  GetModelConfig("car_select", &model_config);
-  std::string current_carname;
-  if (!model_config->get_value("current_carname", &current_carname)) {
-    AERROR << "cannot get param current_carname";
-    return false;
-  }
-  config_path_ = work_root_ + "/" + current_carname;
+  config_path_ = cyber::common::CarConfigFilePath();
   inited_ = true;
   return true;
 }

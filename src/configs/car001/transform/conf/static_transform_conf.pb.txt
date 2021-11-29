@@ -1,0 +1,125 @@
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "novatel"
+    file_path: "/transform/params/novatel_localization_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "novatel"
+    child_frame_id: "front_6mm"
+    file_path: "/transform/params/front_6mm_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "novatel"
+    child_frame_id: "rear_6mm"
+    file_path: "/transform/params/rear_6mm_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "radar_front_right"
+    file_path: "/transform/params/radar_front_right_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "radar_front_left"
+    file_path: "/transform/params/radar_front_left_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "radar_rear"
+    file_path: "/transform/params/radar_rear_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic0"
+    file_path: "/transform/params/sonic0_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic1"
+    file_path: "/transform/params/sonic1_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic2"
+    file_path: "/transform/params/sonic2_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic3"
+    file_path: "/transform/params/sonic3_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic4"
+    file_path: "/transform/params/sonic4_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic5"
+    file_path: "/transform/params/sonic5_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic6"
+    file_path: "/transform/params/sonic6_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic7"
+    file_path: "/transform/params/sonic7_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic8"
+    file_path: "/transform/params/sonic8_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic9"
+    file_path: "/transform/params/sonic9_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic10"
+    file_path: "/transform/params/sonic10_extrinsics.yaml"
+    enable: true
+}
+
+extrinsic_file {
+    frame_id: "localization"
+    child_frame_id: "sonic11"
+    file_path: "/transform/params/sonic11_extrinsics.yaml"
+    enable: true
+}

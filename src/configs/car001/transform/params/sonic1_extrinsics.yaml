@@ -1,0 +1,17 @@
+header:
+  seq: 0
+  stamp:
+    secs: 0
+    nsecs: 0
+  frame_id: localization
+transform:
+  rotation:
+    x: 0
+    y: 0
+    z: 0.707
+    w: -0.707
+  translation:
+    x: 0.985
+    y: 2.96
+    z: 0
+child_frame_id: sonic1

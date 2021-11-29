@@ -35,6 +35,7 @@ function(generate_cpp_pb_file pb_path)
   target_link_libraries(${PROJECT_NAME}_proto
     ${catkin_LIBRARIES}
     ${PROTOBUF_LIBRARIES}
+    common_proto
   )
 endfunction()
 

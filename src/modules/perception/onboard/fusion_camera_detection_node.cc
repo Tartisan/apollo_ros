@@ -1,11 +1,12 @@
+#include "fusion_camera_detection_component.h"
 #include <ros/ros.h>
-#include "fusion_camera_detection.h"
 
 int main(int argc, char *argv[]) {
-  ros::init(argc, argv, "FusionCameraDetection");
+  ros::init(argc, argv, "FusionCameraDetectionComponent");
   ros::NodeHandle nh;
   ros::NodeHandle private_nh;
-  apollo::perception::onboard::FusionCameraDetection node(nh, private_nh);
+  using apollo::perception::onboard::FusionCameraDetectionComponent;
+  FusionCameraDetectionComponent node(nh, private_nh);
   ros::spin();
   return 0;
 }

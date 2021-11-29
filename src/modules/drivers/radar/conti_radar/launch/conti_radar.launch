@@ -8,6 +8,6 @@
 
 <launch>
   <node name="conti_radar_front" pkg="drivers" type="conti_radar" output="screen">
-    <param name="config_file_path" value="radar/conti_radar/conf/radar_front_conf.pb.txt"/>
+    <param name="config_file_path" value="/drivers/conti_radar/conf/radar_front_conf.pb.txt"/>
   </node>
 </launch>
