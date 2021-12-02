@@ -72,10 +72,11 @@ COPY files/toplevel.cmake /opt/ros/melodic/share/catkin/cmake/toplevel.cmake
 COPY files/nppdefs.h /usr/local/cuda-10.0/include/ 
 COPY files/nppi.h /usr/local/cuda-10.0/include/ 
 
-## TODO:
 ## /usr/include/eigen3/Eigen/Core 42行改为 #include <cuda_runtime.h>
+COPY files/Core /usr/include/eigen3/Eigen/
 ## 注释 /usr/local/cuda-10.0/targets/x86_64-linux/include/crt/common_functions.h 74行
+COPY files/common_functions.h /usr/local/cuda-10.0/targets/x86_64-linux/include/crt/
 
+## TODO:
 ## libtorch-cxx11-abi-shared-with-deps-1.7.0+cu101 解压放到 /usr/local/
-
 ## cmake-3.20.6-linux-x86_64
