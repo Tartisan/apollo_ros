@@ -85,32 +85,17 @@ link_directories(
 )
 
 add_subdirectory(proto)
+add_subdirectory(onboard/proto)
 
 if(NOT NO_GPU)
   add_subdirectory(base)
   add_subdirectory(common)
   add_subdirectory(lib)
   add_subdirectory(inference)
+  add_subdirectory(map)
   add_subdirectory(camera)
   # add_subdirectory(lidar)
+  # add_subdirectory(fusion)
   # add_subdirectory(radar)
-
-  ################# executable ################
-  add_executable(fusion_camera_detection 
-    onboard/fusion_camera_detection_node.cc 
-    onboard/fusion_camera_detection_component.cc
-  )
-  target_link_libraries(fusion_camera_detection 
-    ${catkin_LIBRARIES}
-    ${OpenCV_LIBRARIES}
-    ${CUDA_LIBRARIES}
-    ${PROTOBUF_LIBRARIES}
-    ${YAML_CPP_LIBRARIES}
-    perception_base
-    perception_camera
-    perception_common
-    perception_inference
-    perception_proto
-    perception_lib
-  )
+  add_subdirectory(onboard)
 endif()

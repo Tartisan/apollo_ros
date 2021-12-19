@@ -1,0 +1,11 @@
+add_library(perception_map
+  hdmap/hdmap_input.cc
+)
+target_link_libraries(perception_map 
+  ${YAML_CPP_LIBRARIES}
+  cyber
+  map
+  perception_lib
+  perception_base
+  perception_common
+)

@@ -19,3 +19,4 @@ add_library(${PROJECT_NAME}
   # util
   util/util.cc
 )
+target_link_libraries(${PROJECT_NAME} common_proto)

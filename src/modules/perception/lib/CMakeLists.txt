@@ -11,4 +11,5 @@ target_link_libraries(perception_lib
   ${YAML_CPP_LIBRARIES}
   cyber
   perception_base
+  perception_proto
 )

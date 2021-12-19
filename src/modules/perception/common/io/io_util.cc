@@ -15,7 +15,7 @@
  *****************************************************************************/
 #include "modules/perception/common/io/io_util.h"
 
-// #include "absl/strings/match.h"
+#include "absl/strings/match.h"
 #include "boost/filesystem.hpp"
 #include "yaml-cpp/yaml.h"
 
@@ -169,13 +169,9 @@ bool GetFileList(const std::string &path, const std::string &suffix,
   boost::filesystem::recursive_directory_iterator itr(path);
   while (itr != boost::filesystem::recursive_directory_iterator()) {
     try {
-      std::string file = itr->path().string();
-      if (std::equal(file.rbegin(), file.rend(), suffix.rbegin())) {
-        files->push_back(file);
+      if (absl::EndsWith(itr->path().string(), suffix)) {
+        files->push_back(itr->path().string());
       }
-      // if (absl::EndsWith(itr->path().string(), suffix)) {
-      //   files->push_back(itr->path().string());
-      // }
       ++itr;
     } catch (const std::exception &ex) {
       AWARN << "Caught execption: " << ex.what();

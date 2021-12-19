@@ -17,7 +17,7 @@
 
 #include <utility>
 
-// #include "absl/strings/str_cat.h"
+#include "absl/strings/str_cat.h"
 #include "cyber/common/log.h"
 #include "cyber/common/file.h"
 #include "modules/perception/base/object.h"
