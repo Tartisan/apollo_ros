@@ -7,10 +7,16 @@ cuda_add_library(perception_inference
   operators/roipooling_layer.cc
   operators/roipooling_layer.cu
   tensorrt/plugins/argmax_plugin.cu
+  tensorrt/plugins/dfmb_psroi_align_plugin.cu
+  tensorrt/plugins/kernels.cu
   tensorrt/plugins/leakyReLU_plugin.cu
+  tensorrt/plugins/nms_cuda.cu
+  tensorrt/plugins/rcnn_proposal_plugin.cu
+  tensorrt/plugins/rpn_proposal_ssd_plugin.cu
   tensorrt/plugins/slice_plugin.cu
   tensorrt/plugins/softmax_plugin.cu
   tensorrt/batch_stream.cc
+  tensorrt/entropy_calibrator.cc
   tensorrt/rt_common.cc
   tensorrt/rt_net.cc
   tensorrt/rt_utils.cc
@@ -28,4 +34,10 @@ target_link_libraries(perception_inference
   ${TORCH_LIBRARIES}
   ${Boost_LIBRARIES}
   perception_proto
+  absl::strings
+  absl::raw_logging_internal
+  absl::base_internal
+  nvinfer
+  nvonnxparser
+  nvinfer_plugin
 )

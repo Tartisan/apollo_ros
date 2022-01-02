@@ -22,6 +22,9 @@ include_directories(
 
 add_subdirectory(proto)
 
+add_library(transform_buffer buffer.cc)
+target_link_libraries(transform_buffer ${catkin_LIBRARIES} transform_proto cyber)
+
 add_executable(static_transform
   static_transform_node.cc
   static_transform_component.cc

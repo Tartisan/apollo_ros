@@ -18,11 +18,13 @@
 #include <atomic>
 #include <memory>
 #include <string>
+#include <ros/ros.h>
+#include <sensor_msgs/PointCloud2.h>
 
 #include "cyber/cyber.h"
-#include "ros/ros.h"
-#include <sensor_msgs/PointCloud2.h>
-// #include "modules/drivers/proto/pointcloud.pb.h"
+
+#include "modules/tools/data_conversion/convert.h"
+#include "modules/drivers/proto/pointcloud.pb.h"
 #include "modules/perception/lidar/app/lidar_obstacle_detection.h"
 #include "modules/perception/lidar/common/lidar_frame.h"
 #include "modules/perception/onboard/component/lidar_inner_component_messages.h"
@@ -35,17 +37,17 @@ namespace onboard {
 
 class DetectionComponent {
  public:
-  DetectionComponent();
-  virtual ~DetectionComponent();
+  DetectionComponent() {}
+  ~DetectionComponent() {}
 
   bool Init(ros::NodeHandle nh, ros::NodeHandle private_nh);
-  bool Proc(const sensor_msgs::PointCloud2::ConstPtr& message, 
+  bool Proc(const sensor_msgs::PointCloud2::ConstPtr& ros_msg, 
             const std::shared_ptr<LidarFrameMessage> &out_message);
 
  private:
   bool InitAlgorithmPlugin();
   bool InternalProc(
-      const sensor_msgs::PointCloud2::ConstPtr& in_message,
+      const std::shared_ptr<const drivers::PointCloud>& in_message,
       const std::shared_ptr<LidarFrameMessage>& out_message);
 
  private:

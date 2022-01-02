@@ -140,11 +140,11 @@ function _check_command() {
 }
 
 function build_cpu() {
-    catkin_make -DNO_GPU=true
+    catkin_make -DUSE_GPU=${USE_GPU} -DNO_GPU=true
 }
 
 function build_gpu() {
-    catkin_make
+    catkin_make -DUSE_GPU=${USE_GPU}
 }
 
 function build() {

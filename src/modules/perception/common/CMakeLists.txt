@@ -1,7 +1,11 @@
-
 add_library(perception_common
+  graph/connected_component_analysis.cc
+  graph/disjoint_set.cc
+  graph/graph_segmentor.cc
+  image_processing/hough_transfer.cc
   sensor_manager/sensor_manager.cc
   io/io_util.cc
+  i_lib/pc/i_ground.cc
   perception_gflags.cc
 )
 target_link_libraries(perception_common 

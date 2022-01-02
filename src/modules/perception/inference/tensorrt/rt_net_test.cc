@@ -19,7 +19,6 @@
 #include "gtest/gtest.h"
 #include "gtest/gtest_prod.h"
 
-#include "modules/perception/inference/inference_factory.h"
 #include "modules/perception/inference/utils/util.h"
 
 namespace apollo {
@@ -53,16 +52,16 @@ class TestableRTNet : public RTNet {
 //                                         "ARZ034_12_1499218335_1499218635_894"};
 
 //   std::string image_root =
-//       "kernels/perception/inference/inference_test_data/images/";
+//       "modules/perception/inference/inference_test_data/images/";
 //   std::string image_ext = ".jpg";
 //   std::string output_blob_path =
-//       "kernels/perception/inference/inference_test_data/yolo/blob_names.txt";
+//       "modules/perception/inference/inference_test_data/yolo/blob_names.txt";
 //   std::string proto_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.pt";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.pt";
 //   std::string weight_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.caffemodel";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.caffemodel";
 //   std::string result_file =
-//       "kernels/perception/inference/inference_test_data/yolo/result.dat";
+//       "modules/perception/inference/inference_test_data/yolo/result.dat";
 //   std::string input_blob_name = "data";
 
 //   std::vector<std::string> outputs{"loc_pred", "obj_pred", "cls_pred",
@@ -79,28 +78,28 @@ class TestableRTNet : public RTNet {
 //   std::vector<int> shape = {batchsize, height, width, 3};
 //   std::map<std::string, std::vector<int>> shape_map{{input_blob_name,
 //   shape}}; rt_net.set_max_batch_size(batchsize);
-//   CHECK(rt_net.Init(shape_map));
-//   CHECK(!rt_net.shape("bad", &shape));
+//   ACHECK(rt_net.Init(shape_map));
+//   ACHECK(!rt_net.shape("bad", &shape));
 
-//   CHECK(!rt_net.checkInt8("test", nullptr));
+//   ACHECK(!rt_net.checkInt8("test", nullptr));
 //   std::shared_ptr<nvinfer1::Int8EntropyCalibrator> calibrator;
 //   apollo::perception::inference::BatchStream stream;
 //   calibrator.reset(new nvinfer1::Int8EntropyCalibrator(stream, 0, true, ""));
-//   CHECK(!rt_net.checkInt8("test", calibrator.get()));
-//   CHECK(rt_net.checkInt8("Tesla P4", calibrator.get()));
+//   ACHECK(!rt_net.checkInt8("test", calibrator.get()));
+//   ACHECK(rt_net.checkInt8("Tesla P4", calibrator.get()));
 // }
 // TEST(RTNetLayerOwnCalibratorTest, test) {
 //   std::string image_root =
-//       "kernels/perception/inference/inference_test_data/images/";
+//       "modules/perception/inference/inference_test_data/images/";
 //   std::string image_ext = ".jpg";
 //   std::string output_blob_path =
-//       "kernels/perception/inference/inference_test_data/yolo/blob_names.txt";
+//       "modules/perception/inference/inference_test_data/yolo/blob_names.txt";
 //   std::string proto_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.pt";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.pt";
 //   std::string weight_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.caffemodel";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.caffemodel";
 //   std::string result_file =
-//       "kernels/perception/inference/inference_test_data/yolo/result.dat";
+//       "modules/perception/inference/inference_test_data/yolo/result.dat";
 //   std::string input_blob_name = "data";
 
 //   std::vector<std::string> outputs{"loc_pred", "obj_pred", "cls_pred",
@@ -126,16 +125,16 @@ class TestableRTNet : public RTNet {
 // }
 // TEST(RTNetLayerWeightsTest, test) {
 //   std::string image_root =
-//       "kernels/perception/inference/inference_test_data/images/";
+//       "modules/perception/inference/inference_test_data/images/";
 //   std::string image_ext = ".jpg";
 //   std::string output_blob_path =
-//       "kernels/perception/inference/inference_test_data/yolo/blob_names.txt";
+//       "modules/perception/inference/inference_test_data/yolo/blob_names.txt";
 //   std::string proto_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.pt";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.pt";
 //   std::string weight_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.caffemodel";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.caffemodel";
 //   std::string result_file =
-//       "kernels/perception/inference/inference_test_data/yolo/result.dat";
+//       "modules/perception/inference/inference_test_data/yolo/result.dat";
 //   std::string input_blob_name = "data";
 
 //   std::vector<std::string> outputs{"loc_pred", "obj_pred", "cls_pred",
@@ -152,16 +151,16 @@ class TestableRTNet : public RTNet {
 // }
 // TEST(RTNetScaleLayerTest, test) {
 //   std::string image_root =
-//       "kernels/perception/inference/inference_test_data/images/";
+//       "modules/perception/inference/inference_test_data/images/";
 //   std::string image_ext = ".jpg";
 //   std::string output_blob_path =
-//       "kernels/perception/inference/inference_test_data/yolo/blob_names.txt";
+//       "modules/perception/inference/inference_test_data/yolo/blob_names.txt";
 //   std::string proto_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.pt";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.pt";
 //   std::string weight_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.caffemodel";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.caffemodel";
 //   std::string result_file =
-//       "kernels/perception/inference/inference_test_data/yolo/result.dat";
+//       "modules/perception/inference/inference_test_data/yolo/result.dat";
 //   std::string input_blob_name = "data";
 
 //   std::vector<std::string> outputs{"loc_pred", "obj_pred", "cls_pred",
@@ -209,16 +208,16 @@ class TestableRTNet : public RTNet {
 //                                         "ARZ034_12_1499218335_1499218635_894"};
 
 //   std::string image_root =
-//       "kernels/perception/inference/inference_test_data/images/";
+//       "modules/perception/inference/inference_test_data/images/";
 //   std::string image_ext = ".jpg";
 //   std::string output_blob_path =
-//       "kernels/perception/inference/inference_test_data/yolo/blob_names.txt";
+//       "modules/perception/inference/inference_test_data/yolo/blob_names.txt";
 //   std::string proto_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.pt";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.pt";
 //   std::string weight_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.caffemodel";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.caffemodel";
 //   std::string result_file =
-//       "kernels/perception/inference/inference_test_data/yolo/result.dat";
+//       "modules/perception/inference/inference_test_data/yolo/result.dat";
 //   std::string input_blob_name = "data";
 
 //   std::vector<std::string> outputs{"loc_pred", "obj_pred", "cls_pred",
@@ -230,7 +229,7 @@ class TestableRTNet : public RTNet {
 
 //   rt_net = apollo::perception::inference::CreateInferenceByName(
 //       "RTNet", proto_file, weight_file, outputs, inputs);
-//   CHECK(rt_net);
+//   ACHECK(rt_net);
 //   int height = 576;
 //   int width = 1440;
 //   int offset_y = 312;
@@ -239,7 +238,7 @@ class TestableRTNet : public RTNet {
 //   rt_net->set_gpu_id(-1);
 //   std::map<std::string, std::vector<int>> shape_map{{input_blob_name,
 //   shape}}; rt_net->set_max_batch_size(batchsize);
-//   CHECK(!rt_net->Init(shape_map));
+//   ACHECK(!rt_net->Init(shape_map));
 //   if (rt_net != nullptr) {
 //     delete rt_net;
 //   }
@@ -258,16 +257,16 @@ class TestableRTNet : public RTNet {
 //                                         "ARZ034_12_1499218335_1499218635_894"};
 
 //   std::string image_root =
-//       "kernels/perception/inference/inference_test_data/images/";
+//       "modules/perception/inference/inference_test_data/images/";
 //   std::string image_ext = ".jpg";
 //   std::string output_blob_path =
-//       "kernels/perception/inference/inference_test_data/yolo/blob_names.txt";
+//       "modules/perception/inference/inference_test_data/yolo/blob_names.txt";
 //   std::string proto_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.pt";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.pt";
 //   std::string weight_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.caffemodel";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.caffemodel";
 //   std::string result_file =
-//       "kernels/perception/inference/inference_test_data/yolo/result.dat";
+//       "modules/perception/inference/inference_test_data/yolo/result.dat";
 //   std::string input_blob_name = "data";
 
 //   std::vector<std::string> outputs{"loc_pred", "obj_pred", "cls_pred",
@@ -279,7 +278,7 @@ class TestableRTNet : public RTNet {
 
 //   rt_net = apollo::perception::inference::CreateInferenceByName(
 //       "UNKNWONNet", proto_file, weight_file, outputs, inputs);
-//   CHECK(!rt_net);
+//   ACHECK(!rt_net);
 //   if (rt_net != nullptr) {
 //     delete rt_net;
 //   }
@@ -298,16 +297,16 @@ class TestableRTNet : public RTNet {
 //                                         "ARZ034_12_1499218335_1499218635_894"};
 
 //   std::string image_root =
-//       "kernels/perception/inference/inference_test_data/images/";
+//       "modules/perception/inference/inference_test_data/images/";
 //   std::string image_ext = ".jpg";
 //   std::string output_blob_path =
-//       "kernels/perception/inference/inference_test_data/yolo/blob_names.txt";
+//       "modules/perception/inference/inference_test_data/yolo/blob_names.txt";
 //   std::string proto_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.pt";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.pt";
 //   std::string weight_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.caffemodel";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.caffemodel";
 //   std::string result_file =
-//       "kernels/perception/inference/inference_test_data/yolo/result.dat";
+//       "modules/perception/inference/inference_test_data/yolo/result.dat";
 //   std::string input_blob_name = "data";
 
 //   std::vector<std::string> outputs{"loc_pred", "obj_pred", "cls_pred",
@@ -319,14 +318,14 @@ class TestableRTNet : public RTNet {
 
 //   rt_net = apollo::perception::inference::CreateInferenceByName(
 //       "RTNet", proto_file, weight_file, outputs, inputs);
-//   CHECK(rt_net);
+//   ACHECK(rt_net);
 //   int height = 111;
 //   int width = 222;
 //   int offset_y = 23;
 //   int batchsize = 2;
 //   std::vector<int> shape = {batchsize, height, width, 4};
 //   std::map<std::string, std::vector<int>> shape_map{{"bad", shape}};
-//   CHECK(rt_net->Init(shape_map));
+//   ACHECK(rt_net->Init(shape_map));
 //   auto blob = rt_net->get_blob(input_blob_name);
 //   for (int i = 0; i < shape.size(); i++) {
 //     CHECK_NE(blob->shape(i), shape[i]);
@@ -349,16 +348,16 @@ class TestableRTNet : public RTNet {
 //                                         "ARZ034_12_1499218335_1499218635_874",
 //                                         "ARZ034_12_1499218335_1499218635_894"};
 //   std::string image_root =
-//       "kernels/perception/inference//inference_test_data/images/";
+//       "modules/perception/inference//inference_test_data/images/";
 //   std::string image_ext = ".jpg";
 //   std::string output_blob_path =
-//       "kernels/perception/inference/inference_test_data/yolo/blob_names.txt";
+//       "modules/perception/inference/inference_test_data/yolo/blob_names.txt";
 //   std::string proto_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.pt";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.pt";
 //   std::string weight_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.caffemodel";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.caffemodel";
 //   std::string result_file =
-//       "kernels/perception/inference/inference_test_data/yolo/result.dat";
+//       "modules/perception/inference/inference_test_data/yolo/result.dat";
 //   std::string input_name = "input";
 //   std::string input_blob_name = "data";
 //   std::vector<std::string> outputs{"loc_pred", "obj_pred", "cls_pred",
@@ -371,7 +370,7 @@ class TestableRTNet : public RTNet {
 
 //   rt_net = apollo::perception::inference::CreateInferenceByName(
 //       "RTNet", proto_file, weight_file, outputs, inputs);
-//   CHECK(rt_net);
+//   ACHECK(rt_net);
 //   int height = 576;
 //   int width = 1440;
 //   int offset_y = 312;
@@ -423,16 +422,16 @@ class TestableRTNet : public RTNet {
 //                                         "ARZ034_12_1499218335_1499218635_874",
 //                                         "ARZ034_12_1499218335_1499218635_894"};
 //   std::string image_root =
-//       "kernels/perception/inference/inference_test_data/images/";
+//       "modules/perception/inference/inference_test_data/images/";
 //   std::string image_ext = ".jpg";
 //   std::string output_blob_path =
-//       "kernels/perception/inference/inference_test_data/yolo/blob_names.txt";
+//       "modules/perception/inference/inference_test_data/yolo/blob_names.txt";
 //   std::string proto_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.pt";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.pt";
 //   std::string weight_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.caffemodel";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.caffemodel";
 //   std::string result_file =
-//       "kernels/perception/inference/inference_test_data/yolo/result.dat";
+//       "modules/perception/inference/inference_test_data/yolo/result.dat";
 //   std::string input_name = "input";
 //   std::string input_blob_name = "data";
 
@@ -447,7 +446,7 @@ class TestableRTNet : public RTNet {
 
 //   rt_net.reset(apollo::perception::inference::CreateInferenceByName(
 //       "CaffeNet", proto_file, weight_file, outputs, inputs));
-//   CHECK(rt_net);
+//   ACHECK(rt_net);
 
 //   int height = 576;
 //   int width = 1440;
@@ -496,16 +495,16 @@ class TestableRTNet : public RTNet {
 //                                         "ARZ034_12_1499218335_1499218635_874",
 //                                         "ARZ034_12_1499218335_1499218635_894"};
 //   std::string image_root =
-//       "kernels/perception/inference/inference_test_data/images/";
+//       "modules/perception/inference/inference_test_data/images/";
 //   std::string image_ext = ".jpg";
 //   std::string output_blob_path =
-//       "kernels/perception/inference/inference_test_data/yolo/blob_names.txt";
+//       "modules/perception/inference/inference_test_data/yolo/blob_names.txt";
 //   std::string proto_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.pt";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.pt";
 //   std::string weight_file =
-//       "kernels/perception/inference/inference_test_data/yolo/caffe.caffemodel";
+//       "modules/perception/inference/inference_test_data/yolo/caffe.caffemodel";
 //   std::string result_file =
-//       "kernels/perception/inference/inference_test_data/yolo/result.dat";
+//       "modules/perception/inference/inference_test_data/yolo/result.dat";
 //   std::string input_name = "input";
 //   std::string input_blob_name = "data";
 //   std::vector<std::string> outputs{"loc_pred", "obj_pred", "cls_pred",

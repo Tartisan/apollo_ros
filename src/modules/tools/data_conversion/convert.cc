@@ -1,8 +1,8 @@
 #include "modules/tools/data_conversion/convert.h"
 
 void ConvertPointCloudFromRosToPb(
-    sensor_msgs::PointCloud2::ConstPtr msg,
-    std::shared_ptr<apollo::drivers::PointCloud> pb) {
+    const sensor_msgs::PointCloud2::ConstPtr &msg,
+    std::shared_ptr<apollo::drivers::PointCloud> &pb) {
   auto header = pb->mutable_header();
   header->set_timestamp_sec(msg->header.stamp.toSec());
   header->set_frame_id(msg->header.frame_id);
@@ -53,8 +53,8 @@ void ConvertPointCloudFromRosToPb(
   }
 }
 
-void ConvertImageFromRosToPb(sensor_msgs::Image::ConstPtr msg,
-                             std::shared_ptr<apollo::drivers::Image> pb) {
+void ConvertImageFromRosToPb(const sensor_msgs::Image::ConstPtr &msg,
+                             std::shared_ptr<apollo::drivers::Image> &pb) {
   auto header = pb->mutable_header();
   header->set_timestamp_sec(msg->header.stamp.toSec());
   header->set_frame_id(msg->header.frame_id);
@@ -74,8 +74,8 @@ void ConvertImageFromRosToPb(sensor_msgs::Image::ConstPtr msg,
 }
 
 void ConvertCompressedImageFromRosToPb(
-    sensor_msgs::CompressedImage::ConstPtr msg, 
-    std::shared_ptr<apollo::drivers::CompressedImage> pb) {
+    const sensor_msgs::CompressedImage::ConstPtr &msg, 
+    std::shared_ptr<apollo::drivers::CompressedImage> &pb) {
   auto header = pb->mutable_header();
   header->set_timestamp_sec(msg->header.stamp.toSec());
   header->set_frame_id(msg->header.frame_id);
@@ -86,8 +86,8 @@ void ConvertCompressedImageFromRosToPb(
 }
 
 void ConvertTransformStampedsFromRosToPb(
-    tf2_msgs::TFMessageConstPtr msg,
-    std::shared_ptr<apollo::transform::TransformStampeds> pb) {
+    const tf2_msgs::TFMessageConstPtr &msg,
+    std::shared_ptr<apollo::transform::TransformStampeds> &pb) {
   apollo::transform::TransformStamped *cyber_tf;
   for (size_t i = 0; i < msg->transforms.size(); ++i) {
     cyber_tf = pb->add_transforms();

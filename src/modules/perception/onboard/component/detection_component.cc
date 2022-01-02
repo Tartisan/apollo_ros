@@ -69,18 +69,19 @@ bool DetectionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) {
 }
 
 bool DetectionComponent::Proc(
-    const sensor_msgs::PointCloud2::ConstPtr &message, 
+    const sensor_msgs::PointCloud2::ConstPtr &ros_msg, 
     const std::shared_ptr<LidarFrameMessage> &out_message) {
   AINFO << std::setprecision(16)
         << "Enter detection component, message timestamp: "
-        << message->measurement_time()
+        << ros_msg->header.stamp.toSec()
         << " current timestamp: " << Clock::NowInSeconds();
-
+  auto pb_msg = std::make_shared<apollo::drivers::PointCloud>();
+  ConvertPointCloudFromRosToPb(ros_msg, pb_msg);
   // auto out_message = std::make_shared<LidarFrameMessage>();
 
-  bool status = InternalProc(message, out_message);
+  bool status = InternalProc(pb_msg, out_message);
   if (status) {
-    writer_->Write(out_message);
+    // writer_->Write(out_message);
     AINFO << "Send lidar detect output message.";
   }
   return status;
@@ -107,7 +108,7 @@ bool DetectionComponent::InitAlgorithmPlugin() {
 }
 
 bool DetectionComponent::InternalProc(
-    const sensor_msgs::PointCloud2::ConstPtr &in_message,
+    const std::shared_ptr<const drivers::PointCloud>& in_message,
     const std::shared_ptr<LidarFrameMessage> &out_message) {
   uint32_t seq_num = seq_num_.fetch_add(1);
   const double timestamp = in_message->measurement_time();

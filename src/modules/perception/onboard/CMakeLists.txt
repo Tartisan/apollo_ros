@@ -1,37 +1,50 @@
-add_executable(perception_camera_node 
-  component/fusion_camera_detection_component.cc
-  perception_camera_node.cc 
-)
-target_link_libraries(perception_camera_node 
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  ${CUDA_LIBRARIES}
-  ${PROTOBUF_LIBRARIES}
-  ${YAML_CPP_LIBRARIES}
-  perception_base
-  perception_camera
-  perception_common
-  perception_inference
-  perception_proto
-  perception_lib
-)
+add_subdirectory(proto)
 
-# add_executable(perception_lidar 
-#   onboard/component/detection_component.cc
-#   onboard/component/recognition_component.cc
-#   onboard/component/fusion_component.cc
-#   onboard/perception_lidar_node.cc 
-# )
-# target_link_libraries(perception_lidar
-#   ${catkin_LIBRARIES}
-#   ${OpenCV_LIBRARIES}
-#   ${CUDA_LIBRARIES}
-#   ${PROTOBUF_LIBRARIES}
-#   ${YAML_CPP_LIBRARIES}
-#   perception_base
-#   perception_camera
-#   perception_common
-#   perception_inference
-#   perception_proto
-#   perception_lib
-# )
+if(NOT NO_GPU)
+  set(PERCEPTION_NODE_LIBRARIES 
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    ${CUDA_LIBRARIES}
+    ${PROTOBUF_LIBRARIES}
+    ${YAML_CPP_LIBRARIES}
+    perception_base
+    perception_common
+    perception_inference
+    perception_proto
+    perception_lib
+    perception_map
+  )
+
+  add_library(perception_onboard
+    common_flags/common_flags.cc
+    msg_serializer/msg_serializer.cc
+    transform_wrapper/transform_wrapper.cc
+  )
+  target_link_libraries(perception_onboard
+    perception_onboard_proto
+    ${PERCEPTION_NODE_LIBRARIES}
+  )
+
+  add_executable(perception_camera_node 
+    component/fusion_camera_detection_component.cc
+    perception_camera_node.cc 
+  )
+  target_link_libraries(perception_camera_node 
+    perception_camera
+    ${PERCEPTION_NODE_LIBRARIES}
+  )
+
+  add_executable(perception_lidar_node
+    component/detection_component.cc
+    component/recognition_component.cc
+    component/fusion_component.cc
+    perception_lidar_node.cc 
+  )
+  target_link_libraries(perception_lidar_node
+    perception_lidar
+    perception_onboard
+    conversion
+    transform_buffer
+    ${PERCEPTION_NODE_LIBRARIES}
+  )
+endif()

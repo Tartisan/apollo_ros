@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <ros/ros.h>
 
 #include "cyber/cyber.h"
 
@@ -33,10 +34,11 @@ namespace onboard {
 class RecognitionComponent {
  public:
   RecognitionComponent() : tracker_(nullptr) {}
-  ~RecognitionComponent();
+  ~RecognitionComponent() {}
 
-  bool Init();
-  bool Proc(const std::shared_ptr<LidarFrameMessage>& message);
+  bool Init(ros::NodeHandle nh, ros::NodeHandle private_nh);
+  bool Proc(const std::shared_ptr<LidarFrameMessage>& message, 
+            const std::shared_ptr<SensorFrameMessage>& out_message);
 
  private:
   bool InitAlgorithmPlugin();
@@ -46,10 +48,10 @@ class RecognitionComponent {
   base::SensorInfo sensor_info_;
   std::string main_sensor_name_;
   std::string output_channel_name_;
-  std::shared_ptr<apollo::cyber::Writer<SensorFrameMessage>> writer_;
+  // std::shared_ptr<apollo::cyber::Writer<SensorFrameMessage>> writer_;
 };
 
-CYBER_REGISTER_COMPONENT(RecognitionComponent);
+// CYBER_REGISTER_COMPONENT(RecognitionComponent);
 
 }  // namespace onboard
 }  // namespace perception

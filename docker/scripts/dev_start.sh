@@ -1,7 +1,15 @@
 #/bin/bash
-CONTAINER_NAME=cuda10.0-melodic-ubuntu18.04
-docker stop $CONTAINER_NAME > /dev/null
-docker rm $CONTAINER_NAME > /dev/null
+CONTAINER_NAME=cuda11.1-melodic-ubuntu18.04
+IMG="nvidia/cuda:11.1-cudnn8-melodic-20211230_v2"
+
+# ROS_MASTER_URI
+ROS_ENV="-e ROS_DOMAIN_ID=$(date +%N) \
+    	 -e ROS_MASTER_URI=http://192.168.117.7:11311 \
+		 -e ROS_IP=192.168.117.7 \
+		 -e ROS_HOSTNAME=192.168.117.7"
+
+docker stop $CONTAINER_NAME > /dev/null 2>&1
+docker rm $CONTAINER_NAME > /dev/null 2>&1
 sleep 1
 
 USER_ID=$(id -u)
@@ -26,16 +34,6 @@ elif [ -z "$(nvidia-smi)" ]; then
 else
 	USE_GPU=1
 fi
-
-# ROS_MASTER_URI
-ROS_ENV="-e ROS_DOMAIN_ID=$(date +%N) \
-    		 -e ROS_MASTER_URI=http://192.168.117.7:11311 \
-				 -e ROS_IP=192.168.117.7 \
-				 -e ROS_HOSTNAME=192.168.117.7"
-
-IMG="nvidia/cuda:10.0-melodic-ubuntu18.04-commitv2"
-
-CONTAINER_NAME=cuda10.0-melodic-ubuntu18.04
 
 docker run -it --gpus all -d \
 		--privileged \

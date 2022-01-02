@@ -21,14 +21,18 @@
 #include <string>
 #include <vector>
 
+#include "modules/perception/proto/rt.pb.h"
+
 #include "modules/perception/inference/inference.h"
 #include "modules/perception/inference/tensorrt/entropy_calibrator.h"
-#include "modules/perception/proto/rt.pb.h"
 
 namespace apollo {
 namespace perception {
 namespace inference {
 class ArgMax1Plugin;
+class DFMBPSROIAlignPlugin;
+class RCNNProposalPlugin;
+class RPNProposalSSDPlugin;
 class ReLUPlugin;
 class SLICEPlugin;
 class SoftmaxPlugin;
@@ -48,16 +52,13 @@ const std::map<std::string, nvinfer1::ActivationType> active_map{
     {"Sigmoid", nvinfer1::ActivationType::kSIGMOID},
     {"TanH", nvinfer1::ActivationType::kTANH},
     {"ReLU", nvinfer1::ActivationType::kRELU}};
-const std::vector<std::string> _gpu_checklist{"GeForce GTX 1080",
-                                              "GeForce GTX 1080 Ti",
-                                              "Tesla P4",
-                                              "Tesla P40",
-                                              "GeForce GTX 1070",
-                                              "GeForce GTX 1060",
-                                              "Tesla V100-SXM2-16GB"};
+const std::vector<std::string> _gpu_checklist{
+    "GeForce GTX 1080",    "GeForce GTX 1080 Ti", "Tesla P4",
+    "Tesla P40",           "GeForce GTX 1070",    "GeForce GTX 1060",
+    "Tesla V100-SXM2-16GB"};
 
 class RTNet : public Inference {
-public:
+ public:
   RTNet(const std::string &net_file, const std::string &model_file,
         const std::vector<std::string> &outputs,
         const std::vector<std::string> &inputs);
@@ -75,10 +76,10 @@ public:
 
   void Infer() override;
 
-  std::shared_ptr<apollo::perception::base::Blob<float>>
-  get_blob(const std::string &name) override;
+  std::shared_ptr<apollo::perception::base::Blob<float>> get_blob(
+      const std::string &name) override;
 
-protected:
+ protected:
   bool addInput(const TensorDimsMap &tensor_dims_map,
                 const std::map<std::string, std::vector<int>> &shapes,
                 TensorMap *tensor_map);
@@ -169,6 +170,25 @@ protected:
                        nvinfer1::ITensor *const *inputs,
                        nvinfer1::INetworkDefinition *net, TensorMap *tensor_map,
                        TensorModifyMap *tensor_modify_map);
+
+  void addDFMBPSROIAlignLayer(const LayerParameter &layer_param,
+                              nvinfer1::ITensor *const *inputs, int nbInputs,
+                              nvinfer1::INetworkDefinition *net,
+                              TensorMap *tensor_map,
+                              TensorModifyMap *tensor_modify_map);
+
+  void addRCNNProposalLayer(const LayerParameter &layer_param,
+                            nvinfer1::ITensor *const *inputs, int nbInputs,
+                            nvinfer1::INetworkDefinition *net,
+                            TensorMap *tensor_map,
+                            TensorModifyMap *tensor_modify_map);
+
+  void addRPNProposalSSDLayer(const LayerParameter &layer_param,
+                              nvinfer1::ITensor *const *inputs, int nbInputs,
+                              nvinfer1::INetworkDefinition *net,
+                              TensorMap *tensor_map,
+                              TensorModifyMap *tensor_modify_map);
+
   bool checkInt8(const std::string &gpu_name,
                  nvinfer1::IInt8Calibrator *calibrator);
   void mergeBN(int index, LayerParameter *layer_param);
@@ -178,10 +198,13 @@ protected:
   bool loadWeights(const std::string &model_file, WeightMap *weight_map);
   void init_blob(std::vector<std::string> *names);
 
-private:
+ private:
   nvinfer1::IExecutionContext *context_ = nullptr;
   cudaStream_t stream_ = 0;
   std::vector<std::shared_ptr<ArgMax1Plugin>> argmax_plugins_;
+  std::vector<std::shared_ptr<DFMBPSROIAlignPlugin>> dfmb_psroi_align_plugins_;
+  std::vector<std::shared_ptr<RCNNProposalPlugin>> rcnn_proposal_plugins_;
+  std::vector<std::shared_ptr<RPNProposalSSDPlugin>> rpn_proposal_ssd_plugins_;
   std::vector<std::shared_ptr<SoftmaxPlugin>> softmax_plugins_;
   std::vector<std::shared_ptr<SLICEPlugin>> slice_plugins_;
   std::vector<std::shared_ptr<ReLUPlugin>> relu_plugins_;
@@ -202,6 +225,6 @@ private:
   BlobMap blobs_;
 };
 
-} // namespace inference
-} // namespace perception
-} // namespace apollo
+}  // namespace inference
+}  // namespace perception
+}  // namespace apollo

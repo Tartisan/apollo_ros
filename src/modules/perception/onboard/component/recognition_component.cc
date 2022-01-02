@@ -46,7 +46,7 @@ bool RecognitionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) 
   AINFO << "Lidar Component Configs: " << comp_config.DebugString();
   output_channel_name_ = comp_config.output_channel_name();
   main_sensor_name_ = comp_config.main_sensor_name();
-  writer_ = node_->CreateWriter<SensorFrameMessage>(output_channel_name_);
+  // writer_ = node_->CreateWriter<SensorFrameMessage>(output_channel_name_);
   if (!InitAlgorithmPlugin()) {
     AERROR << "Failed to init recongnition component algorithm plugin.";
     return false;
@@ -55,16 +55,17 @@ bool RecognitionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) 
 }
 
 bool RecognitionComponent::Proc(
-    const std::shared_ptr<LidarFrameMessage>& message) {
+    const std::shared_ptr<LidarFrameMessage>& message, 
+    const std::shared_ptr<SensorFrameMessage>& out_message) {
   AINFO << std::setprecision(16)
         << "Enter Tracking component, message timestamp: "
         << message->timestamp_
         << " current timestamp: " << Clock::NowInSeconds();
 
-  auto out_message = std::make_shared<SensorFrameMessage>();
+  // auto out_message = std::make_shared<SensorFrameMessage>();
 
   if (InternalProc(message, out_message)) {
-    writer_->Write(out_message);
+    // writer_->Write(out_message);
     AINFO << "Send lidar recognition output message.";
     return true;
   }

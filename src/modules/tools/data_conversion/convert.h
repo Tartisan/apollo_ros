@@ -52,16 +52,16 @@
 
 // rosmsg to proto
 void ConvertPointCloudFromRosToPb(
-    sensor_msgs::PointCloud2::ConstPtr msg,
-    std::shared_ptr<apollo::drivers::PointCloud> pb);
-void ConvertImageFromRosToPb(sensor_msgs::Image::ConstPtr msg,
-                             std::shared_ptr<apollo::drivers::Image> pb);
+    const sensor_msgs::PointCloud2::ConstPtr &msg,
+    std::shared_ptr<apollo::drivers::PointCloud> &pb);
+void ConvertImageFromRosToPb(const sensor_msgs::Image::ConstPtr &msg,
+                             std::shared_ptr<apollo::drivers::Image> &pb);
 void ConvertCompressedImageFromRosToPb(
-    sensor_msgs::CompressedImage::ConstPtr msg, 
-    std::shared_ptr<apollo::drivers::CompressedImage> pb);
+    const sensor_msgs::CompressedImage::ConstPtr &msg, 
+    std::shared_ptr<apollo::drivers::CompressedImage> &pb);
 void ConvertTransformStampedsFromRosToPb(
-    tf2_msgs::TFMessageConstPtr msg,
-    std::shared_ptr<apollo::transform::TransformStampeds> pb);
+    const tf2_msgs::TFMessageConstPtr &msg,
+    std::shared_ptr<apollo::transform::TransformStampeds> &pb);
 
 // proto to rosmsg
 void ConvertHeaderFromPbToRos(apollo::common::Header *pb,

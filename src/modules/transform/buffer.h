@@ -19,11 +19,12 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <ros/ros.h>
 
 #include "tf2/buffer_core.h"
 #include "tf2/convert.h"
 
-#include "cyber/node/node.h"
+// #include "cyber/node/node.h"
 #include "modules/transform/buffer_interface.h"
 
 namespace apollo {
@@ -126,15 +127,21 @@ class Buffer : public BufferInterface, public tf2::BufferCore {
       const std::shared_ptr<const apollo::transform::TransformStampeds>&
           transform,
       bool is_static);
+  void ROSSubscriptionCallbackImpl(
+      const geometry_msgs::TransformStamped::ConstPtr& msg_evt,
+      bool is_static);
 
   void TF2MsgToCyber(const geometry_msgs::TransformStamped& tf2_trans_stamped,
                      apollo::transform::TransformStamped& trans_stamped) const; // NOLINT
 
-  std::unique_ptr<cyber::Node> node_;
-  std::shared_ptr<cyber::Reader<apollo::transform::TransformStampeds>>
-      message_subscriber_tf_;
-  std::shared_ptr<cyber::Reader<apollo::transform::TransformStampeds>>
-      message_subscriber_tf_static_;
+//   std::unique_ptr<cyber::Node> node_;
+//   std::shared_ptr<cyber::Reader<apollo::transform::TransformStampeds>>
+//       message_subscriber_tf_;
+//   std::shared_ptr<cyber::Reader<apollo::transform::TransformStampeds>>
+//       message_subscriber_tf_static_;
+
+  ros::Subscriber tf_reader_;
+  ros::Subscriber tf_static_reader_;
 
   cyber::Time last_update_;
   std::vector<geometry_msgs::TransformStamped> static_msgs_;

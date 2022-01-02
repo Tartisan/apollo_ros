@@ -18,8 +18,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <ros/ros.h>
 
-#include "cyber/component/component.h"
+// #include "cyber/component/component.h"
 #include "modules/perception/base/object.h"
 #include "modules/perception/fusion/lib/interface/base_multisensor_fusion.h"
 #include "modules/perception/fusion/lib/interface/base_fusion_system.h"
@@ -33,8 +34,8 @@ namespace onboard {
 
 class FusionComponent {
  public:
-  FusionComponent();
-  ~FusionComponent();
+  FusionComponent() {}
+  ~FusionComponent() {}
   bool Init(ros::NodeHandle nh, ros::NodeHandle private_nh);
   bool Proc(const std::shared_ptr<SensorFrameMessage>& message, 
             std::shared_ptr<PerceptionObstacles> &out_message);
@@ -61,7 +62,7 @@ class FusionComponent {
   // std::shared_ptr<apollo::cyber::Writer<SensorFrameMessage>> inner_writer_;
 };
 
-CYBER_REGISTER_COMPONENT(FusionComponent);
+// CYBER_REGISTER_COMPONENT(FusionComponent);
 
 }  // namespace onboard
 }  // namespace perception

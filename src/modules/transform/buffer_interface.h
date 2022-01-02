@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <string>
 
+#include "cyber/cyber.h"
 #include "modules/transform/proto/transform.pb.h"
 
 namespace apollo {

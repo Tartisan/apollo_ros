@@ -3,6 +3,8 @@ project(perception)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++14)
+add_compile_definitions(USE_GPU=${USE_GPU})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
 
 list(APPEND CMAKE_PREFIX_PATH "/usr/local/libtorch")
 
@@ -24,7 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
-# find_package(absl REQUIRED)
+find_package(absl REQUIRED)
 # Resolve system dependency on yaml-cpp, which apparently does not provide 
 # a CMake find_package() module.
 find_package(PkgConfig REQUIRED)
@@ -46,7 +48,7 @@ if(NOT NO_GPU)
     "${MY_CUDA}/lib/libcublas.so"
     "${MY_CUDA}/lib/libnppial.so"
     "${MY_CUDA}/lib/libnppicc.so"
-    "${MY_CUDA}/lib/libnppicom.so"
+    # "${MY_CUDA}/lib/libnppicom.so"
     "${MY_CUDA}/lib/libnppidei.so"
     "${MY_CUDA}/lib/libnppif.so"
     "${MY_CUDA}/lib/libnppig.so"
@@ -85,7 +87,7 @@ link_directories(
 )
 
 add_subdirectory(proto)
-add_subdirectory(onboard/proto)
+add_subdirectory(onboard)
 
 if(NOT NO_GPU)
   add_subdirectory(base)
@@ -94,8 +96,7 @@ if(NOT NO_GPU)
   add_subdirectory(inference)
   add_subdirectory(map)
   add_subdirectory(camera)
-  # add_subdirectory(lidar)
+  add_subdirectory(lidar)
   # add_subdirectory(fusion)
   # add_subdirectory(radar)
-  add_subdirectory(onboard)
 endif()

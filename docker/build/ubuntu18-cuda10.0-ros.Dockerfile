@@ -77,6 +77,15 @@ COPY files/Core /usr/include/eigen3/Eigen/
 ## 注释 /usr/local/cuda-10.0/targets/x86_64-linux/include/crt/common_functions.h 74行
 COPY files/common_functions.h /usr/local/cuda-10.0/targets/x86_64-linux/include/crt/
 
-## TODO:
-## libtorch-cxx11-abi-shared-with-deps-1.7.0+cu101 解压放到 /usr/local/
 ## cmake-3.20.6-linux-x86_64
+ADD https://cmake.org/files/v3.20/cmake-3.20.6-linux-x86_64.sh /cmake-3.20.6-linux-x86_64.sh
+RUN mkdir /opt/cmake-3.20.6-linux-x86_64 && \
+    sh /cmake-3.20.6-linux-x86_64.sh --prefix=/opt/cmake-3.20.6-linux-x86_64 --skip-license && \
+    ln -s /opt/cmake-3.20.6-linux-x86_64/bin/cmake /usr/local/bin/cmake && \
+    cmake --version && rm /cmake-3.20.6-linux-x86_64.sh
+
+## libtorch 1.7.0
+COPY files/libtorch-cxx11-abi-shared-with-deps-1.7.0+cu101.zip /root
+RUN cd /root && unzip libtorch-cxx11-abi-shared-with-deps-1.7.0+cu101.zip && \
+    mv libtorch /usr/local/ && \
+    rm -rf /root/libtorch*
