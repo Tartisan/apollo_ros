@@ -40,8 +40,8 @@
 #include "cyber/record/record_reader.h"
 #include "cyber/record/record_writer.h"
 
-#include "modules/tools/data_conversion/channel_info.h"
-#include "modules/tools/data_conversion/convert.h"
+#include "modules/tools/data_conversion/lib/channel_info.h"
+#include "modules/tools/data_conversion/lib/convert.h"
 
 using apollo::cyber::proto::SingleMessage;
 using apollo::data::ChannelInfo;

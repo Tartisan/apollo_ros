@@ -32,7 +32,7 @@
 #include "cyber/record/record_reader.h"
 #include "cyber/record/record_viewer.h"
 
-#include "modules/tools/data_conversion/convert.h"
+#include "modules/tools/data_conversion/lib/convert.h"
 
 using apollo::cyber::record::RecordMessage;
 using apollo::cyber::record::RecordReader;
@@ -91,6 +91,12 @@ int main(int argc, char **argv) {
       sensor_msgs::Image msg;
       pb.ParseFromString(m.content);
       ConvertImageFromPbToRos(&pb, &msg);
+      bag.write(msg_name, t, msg);
+    } else if (msg_name.find("PointCloud2") != std::string::npos) {
+      apollo::drivers::PointCloud pb;
+      sensor_msgs::PointCloud2 msg;
+      pb.ParseFromString(m.content);
+      ConvertPointCloudFromPbToRos(&pb, &msg);
       bag.write(msg_name, t, msg);
     } else if (msg_name.find("/apollo/sensor/radar") != std::string::npos) {
       apollo::drivers::ContiRadar pb;

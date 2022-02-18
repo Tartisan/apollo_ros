@@ -23,7 +23,7 @@
 
 #include "cyber/cyber.h"
 
-#include "modules/tools/data_conversion/convert.h"
+#include "modules/tools/data_conversion/lib/convert.h"
 #include "modules/drivers/proto/pointcloud.pb.h"
 #include "modules/perception/lidar/app/lidar_obstacle_detection.h"
 #include "modules/perception/lidar/common/lidar_frame.h"

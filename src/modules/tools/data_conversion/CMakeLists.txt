@@ -25,7 +25,7 @@ include_directories(
 
 link_directories(${CMAKE_SOURCE_DIR}/../devel/lib/) 
 
-add_library(conversion convert.cc)
+add_library(conversion lib/convert.cc lib/channel_info.cc)
 target_link_libraries(conversion
   ${catkin_LIBRARIES}
   cyber
@@ -40,7 +40,7 @@ target_link_libraries(conversion
 add_dependencies(conversion localization_generate_messages drivers_generate_messages)
 
 # rosbag_to_record
-add_executable(rosbag_to_record rosbag_to_record.cc channel_info.cc)
+add_executable(rosbag_to_record rosbag_to_record.cc)
 target_link_libraries(rosbag_to_record conversion)
 
 # record_to_rosbag

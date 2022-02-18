@@ -1,12 +1,24 @@
-#include "modules/tools/data_conversion/convert.h"
+#include "modules/tools/data_conversion/lib/convert.h"
+
+void ConvertHeaderFromRosToPb(const std_msgs::Header *msg, 
+                              apollo::common::Header *pb) {
+  pb->set_timestamp_sec(msg->stamp.toSec());
+  pb->set_frame_id(msg->frame_id);
+  pb->set_sequence_num(msg->seq);
+}
+
+void ConvertHeaderFromPbToRos(apollo::common::Header *pb,
+                              std_msgs::Header *msg) {
+  ros::Time t(pb->timestamp_sec());
+  msg->stamp = t;
+  msg->seq = pb->sequence_num();
+  msg->frame_id = pb->frame_id();
+}
 
 void ConvertPointCloudFromRosToPb(
     const sensor_msgs::PointCloud2::ConstPtr &msg,
     std::shared_ptr<apollo::drivers::PointCloud> &pb) {
-  auto header = pb->mutable_header();
-  header->set_timestamp_sec(msg->header.stamp.toSec());
-  header->set_frame_id(msg->header.frame_id);
-  header->set_sequence_num(msg->header.seq);
+  ConvertHeaderFromRosToPb(&msg->header, pb->mutable_header());
   pb->set_frame_id(msg->header.frame_id);
   pb->set_measurement_time(msg->header.stamp.toSec());
   pb->set_width(msg->width);
@@ -53,11 +65,31 @@ void ConvertPointCloudFromRosToPb(
   }
 }
 
+void ConvertPointCloudFromPbToRos(
+    apollo::drivers::PointCloud *pb, sensor_msgs::PointCloud2 *msg) {
+  sensor_msgs::PointCloud pointcloud;
+  ConvertHeaderFromPbToRos(pb->mutable_header(), &pointcloud.header);
+  geometry_msgs::Point32 point32;
+  sensor_msgs::ChannelFloat32 channel_float32;
+  channel_float32.name = "intensity";
+  for (size_t i = 0; i < pb->point().size(); ++i) {
+    point32.x = pb->point(i).x();
+    point32.y = pb->point(i).y();
+    point32.z = pb->point(i).z();
+    channel_float32.values.push_back(pb->point(i).intensity());
+    pointcloud.points.push_back(point32);
+  }
+
+  if (sensor_msgs::convertPointCloudToPointCloud2(pointcloud, *msg) != 1) {
+    std::cerr << "Fail to convert sensor_msgs PointCloud to PointCloud2!"
+              << std::endl;
+    return;
+  }
+}
+
 void ConvertImageFromRosToPb(const sensor_msgs::Image::ConstPtr &msg,
                              std::shared_ptr<apollo::drivers::Image> &pb) {
-  auto header = pb->mutable_header();
-  header->set_timestamp_sec(msg->header.stamp.toSec());
-  header->set_frame_id(msg->header.frame_id);
+  ConvertHeaderFromRosToPb(&msg->header, pb->mutable_header());
   pb->set_frame_id(msg->header.frame_id);
   pb->set_measurement_time(msg->header.stamp.toSec());
   pb->set_width(msg->width);
@@ -73,16 +105,102 @@ void ConvertImageFromRosToPb(const sensor_msgs::Image::ConstPtr &msg,
   }
 }
 
+void ConvertImageFromPbToRos(apollo::drivers::Image *pb,
+                             sensor_msgs::Image *msg) {
+  ConvertHeaderFromPbToRos(pb->mutable_header(), &msg->header);
+  msg->height = pb->height();
+  msg->width = pb->width();
+  msg->encoding = pb->encoding();
+  msg->step = pb->step();
+  memcpy(&msg->data[0], pb->mutable_data(), pb->step() * pb->height());
+  if (msg->encoding != "yuyv" && msg->encoding != "rgb8") {
+    std::cerr << "Wrong pixel fromat:" << msg->encoding
+              << ",must be yuyv | rgb24" << std::endl;
+    return;
+  }
+}
+
 void ConvertCompressedImageFromRosToPb(
     const sensor_msgs::CompressedImage::ConstPtr &msg, 
     std::shared_ptr<apollo::drivers::CompressedImage> &pb) {
-  auto header = pb->mutable_header();
-  header->set_timestamp_sec(msg->header.stamp.toSec());
-  header->set_frame_id(msg->header.frame_id);
+  ConvertHeaderFromRosToPb(&msg->header, pb->mutable_header());
   pb->set_frame_id(msg->header.frame_id);
   pb->set_measurement_time(msg->header.stamp.toSec());
   pb->set_format(msg->format);
   pb->set_data((const void *)&msg->data[0], msg->data.size());
+}
+
+void ConvertCompressedImageFromPbToRos(apollo::drivers::CompressedImage *pb,
+                                       sensor_msgs::CompressedImage *msg) {
+  ConvertHeaderFromPbToRos(pb->mutable_header(), &msg->header);
+  msg->format = pb->format();
+  msg->data.resize(pb->data().size());
+  memcpy(&msg->data[0], pb->data().data(), pb->data().size());
+}
+
+void ConvertContiRadarFromPbToRos(apollo::drivers::ContiRadar *pb,
+                                  drivers::ContiRadar *msg) {
+  ConvertHeaderFromPbToRos(pb->mutable_header(), &msg->header);
+  drivers::ContiRadarObs obs;
+  for (int i = 0; i < pb->contiobs_size(); ++i) {
+    auto contiobs = pb->mutable_contiobs(i);
+    ConvertHeaderFromPbToRos(contiobs->mutable_header(), &obs.header);
+    obs.clusterortrack = contiobs->clusterortrack();
+    obs.obstacle_id = contiobs->obstacle_id();
+    obs.longitude_dist = contiobs->longitude_dist();
+    obs.lateral_dist = contiobs->lateral_dist();
+    obs.longitude_vel = contiobs->longitude_vel();
+    obs.lateral_vel = contiobs->lateral_vel();
+    obs.rcs = contiobs->rcs();
+    obs.dynprop = contiobs->dynprop();
+    obs.longitude_dist_rms = contiobs->longitude_dist_rms();
+    obs.lateral_dist_rms = contiobs->lateral_dist_rms();
+    obs.longitude_vel_rms = contiobs->longitude_vel_rms();
+    obs.lateral_vel_rms = contiobs->lateral_vel_rms();
+    obs.probexist = contiobs->probexist();
+    obs.meas_state = contiobs->meas_state();
+    obs.longitude_accel = contiobs->longitude_accel();
+    obs.lateral_accel = contiobs->lateral_accel();
+    obs.oritation_angle = contiobs->oritation_angle();
+    obs.longitude_accel_rms = contiobs->longitude_accel_rms();
+    obs.lateral_accel_rms = contiobs->lateral_accel_rms();
+    obs.oritation_angle_rms = contiobs->oritation_angle_rms();
+    obs.length = contiobs->length();
+    obs.width = contiobs->width();
+    obs.obstacle_class = contiobs->obstacle_class();
+    msg->contiobs.push_back(obs);
+  }
+
+  msg->cluster_list_status.near = pb->cluster_list_status().near();
+  msg->cluster_list_status.far = pb->cluster_list_status().far();
+  msg->cluster_list_status.meas_counter =
+      pb->cluster_list_status().meas_counter();
+  msg->cluster_list_status.interface_version =
+      pb->cluster_list_status().interface_version();
+
+  msg->object_list_status.nof_objects = pb->object_list_status().nof_objects();
+  msg->object_list_status.meas_counter =
+      pb->object_list_status().meas_counter();
+  msg->object_list_status.interface_version =
+      pb->object_list_status().interface_version();
+
+  msg->radar_state.max_distance = pb->radar_state().max_distance();
+  msg->radar_state.radar_power = pb->radar_state().radar_power();
+  msg->radar_state.output_type = pb->radar_state().output_type();
+  msg->radar_state.rcs_threshold = pb->radar_state().rcs_threshold();
+  msg->radar_state.send_quality = pb->radar_state().send_quality();
+  msg->radar_state.send_ext_info = pb->radar_state().send_ext_info();
+}
+
+void ConvertTransformFromPbToRos(apollo::transform::Transform *pb,
+                                 geometry_msgs::Transform *msg) {
+  msg->translation.x = pb->translation().x();
+  msg->translation.y = pb->translation().y();
+  msg->translation.z = pb->translation().z();
+  msg->rotation.x = pb->rotation().qx();
+  msg->rotation.y = pb->rotation().qy();
+  msg->rotation.z = pb->rotation().qz();
+  msg->rotation.w = pb->rotation().qw();
 }
 
 void ConvertTransformStampedsFromRosToPb(
@@ -91,14 +209,9 @@ void ConvertTransformStampedsFromRosToPb(
   apollo::transform::TransformStamped *cyber_tf;
   for (size_t i = 0; i < msg->transforms.size(); ++i) {
     cyber_tf = pb->add_transforms();
-    cyber_tf->mutable_header()->set_timestamp_sec(
-        msg->transforms[i].header.stamp.toSec());
-    cyber_tf->mutable_header()->set_frame_id(
-        msg->transforms[i].header.frame_id);
-    cyber_tf->mutable_header()->set_sequence_num(msg->transforms[i].header.seq);
-
+    ConvertHeaderFromRosToPb(&msg->transforms[i].header, 
+                             cyber_tf->mutable_header());
     cyber_tf->set_child_frame_id(msg->transforms[i].child_frame_id);
-
     cyber_tf->mutable_transform()->mutable_translation()->set_x(
         msg->transforms[i].transform.translation.x);
     cyber_tf->mutable_transform()->mutable_translation()->set_y(
@@ -116,25 +229,6 @@ void ConvertTransformStampedsFromRosToPb(
   }
 }
 
-void ConvertHeaderFromPbToRos(apollo::common::Header *pb,
-                              std_msgs::Header *msg) {
-  ros::Time t(pb->timestamp_sec());
-  msg->stamp = t;
-  msg->seq = pb->sequence_num();
-  msg->frame_id = pb->frame_id();
-}
-
-void ConvertTransformFromPbToRos(apollo::transform::Transform *pb,
-                                 geometry_msgs::Transform *msg) {
-  msg->translation.x = pb->translation().x();
-  msg->translation.y = pb->translation().y();
-  msg->translation.z = pb->translation().z();
-  msg->rotation.x = pb->rotation().qx();
-  msg->rotation.y = pb->rotation().qy();
-  msg->rotation.z = pb->rotation().qz();
-  msg->rotation.w = pb->rotation().qw();
-}
-
 void ConvertTransformStampedsFromPbToRos(
     apollo::transform::TransformStampeds *pb, tf2_msgs::TFMessage *msg) {
   geometry_msgs::TransformStamped ros_tf;
@@ -145,32 +239,6 @@ void ConvertTransformStampedsFromPbToRos(
     ConvertTransformFromPbToRos(cyber_tf->mutable_transform(),
                                 &ros_tf.transform);
     msg->transforms.push_back(ros_tf);
-  }
-}
-
-void ConvertCompressedImageFromPbToRos(apollo::drivers::CompressedImage *pb,
-                                       sensor_msgs::CompressedImage *msg) {
-  ConvertHeaderFromPbToRos(pb->mutable_header(), &msg->header);
-  msg->format = pb->format();
-  uint8_t ch;
-  for (int i = 0; i < pb->data().size(); ++i) {
-    ch = static_cast<uint8_t>(pb->data()[i]);
-    msg->data.push_back(ch);
-  }
-}
-
-void ConvertImageFromPbToRos(apollo::drivers::Image *pb,
-                             sensor_msgs::Image *msg) {
-  ConvertHeaderFromPbToRos(pb->mutable_header(), &msg->header);
-  msg->height = pb->height();
-  msg->width = pb->width();
-  msg->encoding = pb->encoding();
-  msg->step = pb->step();
-  memcpy(&msg->data[0], pb->mutable_data(), pb->step() * pb->height());
-  if (msg->encoding != "yuyv" && msg->encoding != "rgb8") {
-    std::cerr << "Wrong pixel fromat:" << msg->encoding
-              << ",must be yuyv | rgb24" << std::endl;
-    return;
   }
 }
 
@@ -226,59 +294,4 @@ void ConvertLocalizationEstimateFromPbToRos(
   ConvertPointFromPbToRos(
       pb->mutable_uncertainty()->mutable_angular_velocity_std_dev(),
       &msg->uncertainty.angular_velocity_std_dev);
-}
-
-void ConvertContiRadarFromPbToRos(apollo::drivers::ContiRadar *pb,
-                                  drivers::ContiRadar *msg) {
-  ConvertHeaderFromPbToRos(pb->mutable_header(), &msg->header);
-
-  drivers::ContiRadarObs obs;
-  for (int i = 0; i < pb->contiobs_size(); ++i) {
-    auto contiobs = pb->mutable_contiobs(i);
-    ConvertHeaderFromPbToRos(contiobs->mutable_header(), &obs.header);
-    obs.clusterortrack = contiobs->clusterortrack();
-    obs.obstacle_id = contiobs->obstacle_id();
-    obs.longitude_dist = contiobs->longitude_dist();
-    obs.lateral_dist = contiobs->lateral_dist();
-    obs.longitude_vel = contiobs->longitude_vel();
-    obs.lateral_vel = contiobs->lateral_vel();
-    obs.rcs = contiobs->rcs();
-    obs.dynprop = contiobs->dynprop();
-    obs.longitude_dist_rms = contiobs->longitude_dist_rms();
-    obs.lateral_dist_rms = contiobs->lateral_dist_rms();
-    obs.longitude_vel_rms = contiobs->longitude_vel_rms();
-    obs.lateral_vel_rms = contiobs->lateral_vel_rms();
-    obs.probexist = contiobs->probexist();
-    obs.meas_state = contiobs->meas_state();
-    obs.longitude_accel = contiobs->longitude_accel();
-    obs.lateral_accel = contiobs->lateral_accel();
-    obs.oritation_angle = contiobs->oritation_angle();
-    obs.longitude_accel_rms = contiobs->longitude_accel_rms();
-    obs.lateral_accel_rms = contiobs->lateral_accel_rms();
-    obs.oritation_angle_rms = contiobs->oritation_angle_rms();
-    obs.length = contiobs->length();
-    obs.width = contiobs->width();
-    obs.obstacle_class = contiobs->obstacle_class();
-    msg->contiobs.push_back(obs);
-  }
-
-  msg->cluster_list_status.near = pb->cluster_list_status().near();
-  msg->cluster_list_status.far = pb->cluster_list_status().far();
-  msg->cluster_list_status.meas_counter =
-      pb->cluster_list_status().meas_counter();
-  msg->cluster_list_status.interface_version =
-      pb->cluster_list_status().interface_version();
-
-  msg->object_list_status.nof_objects = pb->object_list_status().nof_objects();
-  msg->object_list_status.meas_counter =
-      pb->object_list_status().meas_counter();
-  msg->object_list_status.interface_version =
-      pb->object_list_status().interface_version();
-
-  msg->radar_state.max_distance = pb->radar_state().max_distance();
-  msg->radar_state.radar_power = pb->radar_state().radar_power();
-  msg->radar_state.output_type = pb->radar_state().output_type();
-  msg->radar_state.rcs_threshold = pb->radar_state().rcs_threshold();
-  msg->radar_state.send_quality = pb->radar_state().send_quality();
-  msg->radar_state.send_ext_info = pb->radar_state().send_ext_info();
 }

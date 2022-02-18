@@ -14,7 +14,7 @@
  * limitations under the License.
  *****************************************************************************/
 
-#include "modules/tools/data_conversion/channel_info.h"
+#include "modules/tools/data_conversion/lib/channel_info.h"
 
 namespace apollo {
 namespace data {
