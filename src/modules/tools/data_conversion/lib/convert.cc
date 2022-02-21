@@ -19,8 +19,10 @@ void ConvertPointCloudFromRosToPb(
     const sensor_msgs::PointCloud2::ConstPtr &msg,
     std::shared_ptr<apollo::drivers::PointCloud> &pb) {
   ConvertHeaderFromRosToPb(&msg->header, pb->mutable_header());
+  pb->mutable_header()->set_lidar_timestamp(
+      ::google::protobuf::uint64 (msg->header.stamp.toNSec()));
   pb->set_frame_id(msg->header.frame_id);
-  pb->set_measurement_time(msg->header.stamp.toSec());
+  pb->set_measurement_time(msg->header.stamp.toNSec());
   pb->set_width(msg->width);
   pb->set_height(msg->height);
 

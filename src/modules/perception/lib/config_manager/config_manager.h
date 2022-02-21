@@ -147,19 +147,18 @@ class ConfigManager {
 
   bool LodeModelConfigFile(const std::string &config_file);
 
-  std::string GetConfigPath() const { return config_path_; }
+  // std::string GetConfigPath() const { return config_path_; }
 
  private:
   bool InitInternal();
-  bool InitConfigPath();
-
+  // bool InitConfigPath();
 
   // key: model_name
   std::map<std::string, ModelConfig *> model_config_map_;
   Mutex mutex_;  // multi-thread init safe.
   bool inited_ = false;
   std::string work_root_;  // ConfigManager work root dir.
-  std::string config_path_;
+  // std::string config_path_;
 
   DECLARE_SINGLETON(ConfigManager)
 };

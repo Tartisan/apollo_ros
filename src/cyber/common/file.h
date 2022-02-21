@@ -197,7 +197,7 @@ std::string GetFileName(const std::string &path,
 
 std::string GetCurrentPath();
 
-std::string CarConfigFilePath();
+std::string GetConfigPath();
 
 // delete file including file or directory
 bool DeleteFile(const std::string &filename);

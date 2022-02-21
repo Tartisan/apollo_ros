@@ -29,14 +29,12 @@ using cyber::common::GetAbsolutePath;
 using cyber::common::GetProtoFromASCIIFile;
 
 ConfigManager::ConfigManager() {
-  const std::string cyber_pkg_path = cyber::common::WorkRoot();
-  work_root_ = cyber_pkg_path + "/../configs";
-  InitConfigPath();
+  work_root_ = cyber::common::GetConfigPath() + "/perception";
 }
 
 bool ConfigManager::Init() {
   MutexLock lock(&mutex_);
-  return InitConfigPath();
+  return InitInternal();
 }
 
 bool ConfigManager::InitInternal() {
@@ -98,8 +96,8 @@ bool ConfigManager::InitInternal() {
     }
   }
 
-  // AINFO << "finish to load ModelConfigs. NumModels: "
-  //       << model_config_map_.size();
+  AINFO << "finish to load ModelConfigs. NumModels: "
+        << model_config_map_.size();
 
   inited_ = true;
 
@@ -109,14 +107,14 @@ bool ConfigManager::InitInternal() {
 bool ConfigManager::Reset() {
   MutexLock lock(&mutex_);
   inited_ = false;
-  return InitConfigPath();
+  return InitInternal();
 }
 
 bool ConfigManager::GetModelConfig(const std::string &model_name,
                                    const ModelConfig **model_config) {
-  // if (!inited_ && !Init()) {
-  //   return false;
-  // }
+  if (!inited_ && !Init()) {
+    return false;
+  }
 
   auto citer = model_config_map_.find(model_name);
   if (citer == model_config_map_.end()) {
@@ -162,14 +160,14 @@ bool ConfigManager::LodeModelConfigFile(const std::string &config_file) {
   return true;
 }
 
-bool ConfigManager::InitConfigPath() {
-  if (inited_) {
-    return true;
-  }
-  config_path_ = cyber::common::CarConfigFilePath();
-  inited_ = true;
-  return true;
-}
+// bool ConfigManager::InitConfigPath() {
+//   if (inited_) {
+//     return true;
+//   }
+//   config_path_ = cyber::common::GetConfigPath();
+//   inited_ = true;
+//   return true;
+// }
 
 ConfigManager::~ConfigManager() {
   for (auto iter = model_config_map_.begin(); iter != model_config_map_.end();

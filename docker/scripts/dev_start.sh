@@ -8,7 +8,7 @@ if [ "$(readlink -f /apollo)" != "${APOLLO_ROOT_DIR}" ]; then
     sudo ln -snf ${APOLLO_ROOT_DIR} /apollo_ros
 fi
 
-LOCAL_IP=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
+LOCAL_IP=$(ip addr | grep 'state UP' -A2 | sed -n '3p' | awk '{print $2}' | cut -f1  -d'/')
 # ROS_MASTER_URI
 ROS_ENV="-e ROS_DOMAIN_ID=$(date +%N) \
     	 -e ROS_MASTER_URI=http://${LOCAL_IP}:11311 \

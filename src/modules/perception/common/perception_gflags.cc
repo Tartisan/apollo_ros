@@ -40,23 +40,23 @@ DEFINE_string(work_root, "", "Project work root direcotry.");
 // lidar_point_pillars
 DEFINE_int32(gpu_id, 0, "The id of gpu used for inference.");
 DEFINE_string(pfe_torch_file,
-              "/apollo/modules/perception/production/data/perception/lidar/"
+              "/apollo_ros/src/configs/car001/perception/data/lidar/"
               "models/detection/point_pillars/pts_voxel_encoder.zip",
               "The path of pillars feature extractor torch file.");
 DEFINE_string(scattered_torch_file,
-              "/apollo/modules/perception/production/data/perception/lidar/"
+              "/apollo_ros/src/configs/car001/perception/data/lidar/"
               "models/detection/point_pillars/pts_middle_encoder.zip",
               "The path of pillars feature scatter torch file.");
 DEFINE_string(backbone_torch_file,
-              "/apollo/modules/perception/production/data/perception/lidar/"
+              "/apollo_ros/src/configs/car001/perception/data/lidar/"
               "models/detection/point_pillars/pts_backbone.zip",
               "The path of pillars backbone torch file.");
 DEFINE_string(fpn_torch_file,
-              "/apollo/modules/perception/production/data/perception/lidar/"
+              "/apollo_ros/src/configs/car001/perception/data/lidar/"
               "models/detection/point_pillars/pts_neck.zip",
               "The path of pillars fpn torch file.");
 DEFINE_string(bbox_head_torch_file,
-              "/apollo/modules/perception/production/data/perception/lidar/"
+              "/apollo_ros/src/configs/car001/perception/data/lidar/"
               "models/detection/point_pillars/pts_bbox_head.zip",
               "The path of pillars bbox head torch file.");
 DEFINE_double(normalizing_factor, 255,
@@ -95,23 +95,23 @@ DEFINE_int32(num_output_box_feature, 7, "Length of output box feature.");
 
 // lidar_mask_pillars
 DEFINE_string(mask_pfe_torch_file,
-              "/apollo/modules/perception/production/data/perception/lidar/"
+              "/apollo_ros/src/configs/car001/perception/data/lidar/"
               "models/detection/mask_pillars/pts_voxel_encoder.zip",
               "The path of pillars feature extractor torch file.");
 DEFINE_string(mask_scattered_torch_file,
-              "/apollo/modules/perception/production/data/perception/lidar/"
+              "/apollo_ros/src/configs/car001/perception/data/lidar/"
               "models/detection/mask_pillars/pts_middle_encoder.zip",
               "The path of pillars feature scatter torch file.");
 DEFINE_string(mask_backbone_torch_file,
-              "/apollo/modules/perception/production/data/perception/lidar/"
+              "/apollo_ros/src/configs/car001/perception/data/lidar/"
               "models/detection/mask_pillars/pts_backbone.zip",
               "The path of pillars backbone torch file.");
 DEFINE_string(mask_fpn_torch_file,
-              "/apollo/modules/perception/production/data/perception/lidar/"
+              "/apollo_ros/src/configs/car001/perception/data/lidar/"
               "models/detection/mask_pillars/pts_neck.zip",
               "The path of pillars fpn torch file.");
 DEFINE_string(mask_bbox_head_torch_file,
-              "/apollo/modules/perception/production/data/perception/lidar/"
+              "/apollo_ros/src/configs/car001/perception/data/lidar/"
               "models/detection/mask_pillars/pts_bbox_head.zip",
               "The path of pillars bbox head torch file.");
 

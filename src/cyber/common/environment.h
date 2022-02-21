@@ -53,7 +53,8 @@ inline const std::string WorkRoot() {
   }
   pclose(pp); //关闭管道
 
-  std::string work_root = GetEnv("CYBER_PATH", cyber_pkg_path);
+  // std::string work_root = GetEnv("CYBER_PATH", cyber_pkg_path);
+  std::string work_root;
   if (work_root.empty()) {
     work_root = cyber_pkg_path;
   }

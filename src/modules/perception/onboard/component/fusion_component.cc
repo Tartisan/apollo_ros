@@ -37,7 +37,7 @@ bool FusionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) {
   nh.param("config_path", config_path,
            std::string(
                "/perception/onboard/fusion/fusion_component_conf.pb.txt"));
-  std::string which_car = cyber::common::CarConfigFilePath();
+  std::string which_car = cyber::common::GetConfigPath();
   if (!cyber::common::GetProtoFromFile(which_car + config_path,
                                        &comp_config)) {
     AERROR << "Get config failed: " << which_car + config_path;

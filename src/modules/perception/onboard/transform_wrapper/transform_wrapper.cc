@@ -208,8 +208,8 @@ bool TransformWrapper::GetSensor2worldTrans(
   if (novatel2world_trans != nullptr) {
     *novatel2world_trans = novatel2world;
   }
-  AINFO << "Get pose timestamp: " << timestamp << ", pose: \n"
-        << (*sensor2world_trans).matrix();
+  // AINFO << "Get pose timestamp: " << timestamp << ", pose: \n"
+  //       << (*sensor2world_trans).matrix();
   return true;
 }
 

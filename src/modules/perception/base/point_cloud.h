@@ -441,7 +441,8 @@ class AttributePointCloud : public PointCloud<PointT> {
   const std::vector<double>& points_timestamp() const {
     return points_timestamp_;
   }
-  double points_timestamp(size_t i) const { return points_timestamp_[i]; }
+  double& points_timestamp(size_t i) { return points_timestamp_[i]; }
+  const double& points_timestamp(size_t i) const { return points_timestamp_[i]; }
   std::vector<double>* mutable_points_timestamp() { return &points_timestamp_; }
 
   const std::vector<float>& points_height() const { return points_height_; }

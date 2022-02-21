@@ -331,7 +331,7 @@ std::string GetCurrentPath() {
   return getcwd(tmp, sizeof(tmp)) ? std::string(tmp) : std::string("");
 }
 
-std::string CarConfigFilePath() {
+std::string GetConfigPath() {
   cyber::proto::Param param_proto;
   std::string configs_path = WorkRoot() + "/../configs/";
   GetProtoFromASCIIFile(configs_path + "car_name.conf", &param_proto);

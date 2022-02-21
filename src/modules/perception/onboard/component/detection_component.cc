@@ -23,6 +23,15 @@
 #include "modules/perception/lidar/common/lidar_log.h"
 #include "modules/perception/onboard/common_flags/common_flags.h"
 
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
+#include <tf/transform_datatypes.h>
+#include <geometry_msgs/Quaternion.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl_ros/point_cloud.h>
+
 using ::apollo::cyber::Clock;
 
 namespace apollo {
@@ -33,21 +42,22 @@ std::atomic<uint32_t> DetectionComponent::seq_num_{0};
 
 bool DetectionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) {
   // ros params
-  std::string config_path;
+  std::string comp_file;
   std::string input_channel;
-  private_nh.param("config_path", config_path,
-           std::string(
-               "/perception/onboard/lidar/velodyne64_detection_conf.pb.txt"));
-  private_nh.param("channel", input_channel, std::string("/apollo/sensor/velodyne64/compensator/PointCloud2"));
+  private_nh.param(
+      "comp_file", comp_file,
+      std::string("/perception/conf/lidar/velodyne64_detection_conf.pb.txt"));
+  private_nh.param(
+      "channel", input_channel,
+      std::string("/apollo/sensor/velodyne64/compensator/PointCloud2"));
   LidarDetectionComponentConfig comp_config;
   // if (!GetProtoConfig(&comp_config)) {
   //   AERROR << "Get config failed";
   //   return false;
   // }
-  std::string which_car = cyber::common::CarConfigFilePath();
-  if (!cyber::common::GetProtoFromFile(which_car + config_path,
-                                       &comp_config)) {
-    AERROR << "Get config failed: " << which_car + config_path;
+  std::string config_path = cyber::common::GetConfigPath();
+  if (!cyber::common::GetProtoFromFile(config_path + comp_file, &comp_config)) {
+    AERROR << "Get config failed: " << config_path + comp_file;
     return false;
   }
   AINFO << "Lidar Component Configs: " << comp_config.DebugString();
@@ -59,20 +69,29 @@ bool DetectionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) {
   lidar_query_tf_offset_ =
       static_cast<float>(comp_config.lidar_query_tf_offset());
   enable_hdmap_ = comp_config.enable_hdmap();
+  enable_visualize_ = comp_config.enable_visualize();
   // writer_ = node_->CreateWriter<LidarFrameMessage>(output_channel_name_);
 
+  if (enable_visualize_) {
+    pub_segmented_objects_ =
+        nh.advertise<jsk_recognition_msgs::BoundingBoxArray>(
+            "/perception/lidar_frame/segmented_objects", 1);
+    pub_non_ground_points_ = nh.advertise<sensor_msgs::PointCloud2>(
+        "/perception/lidar_frame/non_ground_points", 1);
+  }
+
   if (!InitAlgorithmPlugin()) {
-    AERROR << "Failed to init detection component algorithm plugin.";
+    AERROR << "Failed to init detection_component algorithm plugin.";
     return false;
   }
   return true;
 }
 
 bool DetectionComponent::Proc(
-    const sensor_msgs::PointCloud2::ConstPtr &ros_msg, 
+    const sensor_msgs::PointCloud2::ConstPtr &ros_msg,
     const std::shared_ptr<LidarFrameMessage> &out_message) {
   AINFO << std::setprecision(16)
-        << "Enter detection component, message timestamp: "
+        << "Enter detection_component, message timestamp: "
         << ros_msg->header.stamp.toSec()
         << " current timestamp: " << Clock::NowInSeconds();
   auto pb_msg = std::make_shared<apollo::drivers::PointCloud>();
@@ -80,10 +99,14 @@ bool DetectionComponent::Proc(
   // auto out_message = std::make_shared<LidarFrameMessage>();
 
   bool status = InternalProc(pb_msg, out_message);
-  if (status) {
-    // writer_->Write(out_message);
-    AINFO << "Send lidar detect output message.";
-  }
+  // if (status) {
+  //   writer_->Write(out_message);
+  //   AINFO << "Send lidar detect output message.";
+  // }
+  AINFO << std::setprecision(16)
+        << "Leave detection_component, message timestamp: "
+        << ros_msg->header.stamp.toSec()
+        << " current timestamp: " << Clock::NowInSeconds();
   return status;
 }
 
@@ -108,13 +131,13 @@ bool DetectionComponent::InitAlgorithmPlugin() {
 }
 
 bool DetectionComponent::InternalProc(
-    const std::shared_ptr<const drivers::PointCloud>& in_message,
+    const std::shared_ptr<const drivers::PointCloud> &in_message,
     const std::shared_ptr<LidarFrameMessage> &out_message) {
   uint32_t seq_num = seq_num_.fetch_add(1);
   const double timestamp = in_message->measurement_time();
   const double cur_time = Clock::NowInSeconds();
   const double start_latency = (cur_time - timestamp) * 1e3;
-  AINFO << std::setprecision(16) << "FRAME_STATISTICS:Lidar:Start:msg_time["
+  AINFO << "FRAME_STATISTICS:Lidar:Start:msg_time[" << std::setprecision(19)
         << timestamp << "]:sensor[" << sensor_name_ << "]:cur_time[" << cur_time
         << "]:cur_latency[" << start_latency << "]";
 
@@ -129,7 +152,6 @@ bool DetectionComponent::InternalProc(
   frame->cloud = base::PointFCloudPool::Instance().Get();
   frame->timestamp = timestamp;
   frame->sensor_info = sensor_info_;
-
   Eigen::Affine3d pose = Eigen::Affine3d::Identity();
   Eigen::Affine3d pose_novatel = Eigen::Affine3d::Identity();
   const double lidar_query_tf_timestamp =
@@ -137,7 +159,8 @@ bool DetectionComponent::InternalProc(
   if (!lidar2world_trans_.GetSensor2worldTrans(lidar_query_tf_timestamp, &pose,
                                                &pose_novatel)) {
     out_message->error_code_ = apollo::common::ErrorCode::PERCEPTION_ERROR_TF;
-    AERROR << "Failed to get pose at time: " << lidar_query_tf_timestamp;
+    AERROR << "Failed to get pose at time: " << std::setprecision(19)
+           << lidar_query_tf_timestamp;
     return false;
   }
 
@@ -156,7 +179,54 @@ bool DetectionComponent::InternalProc(
     return false;
   }
 
+  if (enable_visualize_) {
+    VisualizeLidarFrame(in_message->header(), frame.get());
+  }
+
   return true;
+}
+
+void DetectionComponent::VisualizeLidarFrame(
+    const apollo::common::Header &header, lidar::LidarFrame *frame) {
+  // segmented_objects
+  jsk_recognition_msgs::BoundingBoxArray bounding_boxes;
+  bounding_boxes.header.frame_id = header.frame_id();
+  bounding_boxes.header.stamp = ros::Time(header.timestamp_sec());
+  for (const auto &segment_object : frame->segmented_objects) {
+    jsk_recognition_msgs::BoundingBox bounding_box;
+    bounding_box.header.frame_id = header.frame_id();
+    bounding_box.header.stamp = ros::Time(header.timestamp_sec());
+    bounding_box.pose.position.x = segment_object->center[0];
+    bounding_box.pose.position.y = segment_object->center[1];
+    bounding_box.pose.position.z = segment_object->center[2];
+    bounding_box.dimensions.x = segment_object->size[0];
+    bounding_box.dimensions.y = segment_object->size[1];
+    bounding_box.dimensions.z = segment_object->size[2];
+
+    // std::cout << "heading: " << segment_object->theta << std::endl;
+    geometry_msgs::Quaternion quat =
+        tf::createQuaternionMsgFromYaw(segment_object->theta * M_PI / 180.);
+    bounding_box.pose.orientation = quat;
+    bounding_boxes.boxes.push_back(bounding_box);
+  }
+  pub_segmented_objects_.publish(bounding_boxes);
+
+  // non_ground_points
+  pcl::PointCloud<pcl::PointXYZI> non_ground_points;
+  AINFO << "non_ground_indices size: " << frame->non_ground_indices.indices.size();
+  for (const auto &indice : frame->non_ground_indices.indices) {
+    pcl::PointXYZI point;
+    point.x = frame->cloud->at(indice).x;
+    point.y = frame->cloud->at(indice).y;
+    point.z = frame->cloud->at(indice).z;
+    point.intensity = frame->cloud->at(indice).intensity;
+    non_ground_points.push_back(point);
+  }
+  non_ground_points.header.frame_id = header.frame_id();
+  non_ground_points.header.stamp = header.lidar_timestamp();
+  non_ground_points.width = non_ground_points.points.size();
+  non_ground_points.height = 1;
+  pub_non_ground_points_.publish(non_ground_points);
 }
 
 } // namespace onboard

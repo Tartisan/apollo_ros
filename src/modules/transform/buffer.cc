@@ -29,9 +29,9 @@ int Buffer::Init() {
   std::string node_name = "transform_listener_" +
                           std::to_string(cyber::Time::Now().ToNanosecond());
   static ros::NodeHandle node;
-  tf_reader_ = node.subscribe<geometry_msgs::TransformStamped>("/tf", 100,
+  tf_reader_ = node.subscribe<tf2_msgs::TFMessage>("/tf", 100,
       std::bind(&Buffer::ROSSubscriptionCallbackImpl, this, std::placeholders::_1, false));
-  tf_static_reader_ = node.subscribe<geometry_msgs::TransformStamped>("/tf_static", 1,
+  tf_static_reader_ = node.subscribe<tf2_msgs::TFMessage>("/tf_static", 1,
       std::bind(&Buffer::ROSSubscriptionCallbackImpl, this, std::placeholders::_1, true));
 
   // node_ = cyber::CreateNode(node_name);
@@ -124,11 +124,12 @@ void Buffer::SubscriptionCallbackImpl(
 }
 
 void Buffer::ROSSubscriptionCallbackImpl(
-    const geometry_msgs::TransformStamped::ConstPtr& msg_evt,
+    const ros::MessageEvent<tf2_msgs::TFMessage const>& msg_evt, 
+    // const tf2_msgs::TFMessage::ConstPtr& msg_evt,
     bool is_static) {
   cyber::Time now = cyber::Time::Now();
-  std::string authority =
-      "cyber_tf";  // msg_evt.getPublisherName(); // lookup the authority
+  const tf2_msgs::TFMessage& msg = *(msg_evt.getConstMessage());
+  std::string authority = "ros_tf"; // msg_evt.getPublisherName(); // lookup the authority
   if (now.ToNanosecond() < last_update_.ToNanosecond()) {
     AINFO << "Detected jump back in time. Clearing TF buffer.";
     clear();
@@ -139,16 +140,18 @@ void Buffer::ROSSubscriptionCallbackImpl(
   }
   last_update_ = now;
 
-  try {
-    if (is_static) {
-      static_msgs_.push_back(*msg_evt);
+  for (int i = 0; i < msg.transforms.size(); i++) {
+    try {
+      if (is_static) {
+        static_msgs_ = msg.transforms;
+      }
+      setTransform(msg.transforms[i], authority, is_static);
     }
-    setTransform(*msg_evt, authority, is_static);
-  }
 
-  catch (tf2::TransformException& ex) {
-    std::string temp = ex.what();
-    AERROR << "Failure to set recieved transform:" << temp.c_str();
+    catch (tf2::TransformException& ex) {
+      std::string temp = ex.what();
+      AERROR << "Failure to set recieved transform:" << temp.c_str();
+    }
   }
 }
 

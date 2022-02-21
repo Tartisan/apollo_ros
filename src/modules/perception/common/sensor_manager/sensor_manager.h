@@ -67,7 +67,7 @@ public:
 
 private:
   inline std::string IntrinsicPath(const std::string &frame_id) {
-    std::string intrinsics = config_path_ + "/perception/camera/params/" +
+    std::string intrinsics = config_path_ + "/perception/data/camera/params/" +
                              frame_id + "_intrinsics.yaml";
     return intrinsics;
   }

@@ -23,7 +23,7 @@ namespace apollo {
 namespace transform {
 
 bool StaticTransformComponent::Init() {
-  car_path_ = cyber::common::CarConfigFilePath();
+  car_path_ = cyber::common::GetConfigPath();
   std::string config_file_path =
       car_path_ + "/transform/conf/static_transform_conf.pb.txt";
   if (!cyber::common::GetProtoFromFile(config_file_path, &conf_)) {

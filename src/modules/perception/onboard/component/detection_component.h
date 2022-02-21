@@ -43,6 +43,8 @@ class DetectionComponent {
   bool Init(ros::NodeHandle nh, ros::NodeHandle private_nh);
   bool Proc(const sensor_msgs::PointCloud2::ConstPtr& ros_msg, 
             const std::shared_ptr<LidarFrameMessage> &out_message);
+  void VisualizeLidarFrame(const apollo::common::Header &header, 
+                           lidar::LidarFrame *frame);
 
  private:
   bool InitAlgorithmPlugin();
@@ -55,6 +57,7 @@ class DetectionComponent {
   std::string sensor_name_;
   std::string detector_name_;
   bool enable_hdmap_ = true;
+  bool enable_visualize_ = false;
   float lidar_query_tf_offset_ = 20.0f;
   std::string lidar2novatel_tf2_child_frame_id_;
   std::string output_channel_name_;
@@ -62,7 +65,8 @@ class DetectionComponent {
   TransformWrapper lidar2world_trans_;
   std::unique_ptr<lidar::BaseLidarObstacleDetection> detector_;
   
-  ros::Subscriber reader_;
+  ros::Publisher pub_segmented_objects_;
+  ros::Publisher pub_non_ground_points_;
   // std::shared_ptr<apollo::cyber::Writer<LidarFrameMessage>> writer_;
 };
 

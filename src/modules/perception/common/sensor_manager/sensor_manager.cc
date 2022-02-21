@@ -45,9 +45,9 @@ bool SensorManager::Init() {
   distort_model_map_.clear();
   undistort_model_map_.clear();
 
-  config_path_ = lib::ConfigManager::Instance()->GetConfigPath();
+  config_path_ = cyber::common::GetConfigPath();
   MultiSensorMeta sensor_list_proto;
-  if (!GetProtoFromASCIIFile(config_path_ + "/perception/common/sensor_meta.pt",
+  if (!GetProtoFromASCIIFile(config_path_ + "/perception/data/common/sensor_meta.pt",
                              &sensor_list_proto)) {
     AERROR << "Invalid MultiSensorMeta file: " << config_path_;
     return false;

@@ -21,7 +21,7 @@ FusionCameraDetectionComponent::FusionCameraDetectionComponent(
   node.param("camera_long_topic", camera_long_topic_,
              std::string("apollo/sensor/camera/front_12mm/image"));
   // get config file path
-  config_path_ = lib::ConfigManager::Instance()->GetConfigPath();
+  config_path_ = cyber::common::GetConfigPath();
   // subscribe
   sub_camera_short_ = node.subscribe<sensor_msgs::Image>(
       camera_short_topic_, 2,
@@ -37,7 +37,7 @@ FusionCameraDetectionComponent::FusionCameraDetectionComponent(
 
   camera_perception_init_options_.gpu_id = gpu_id_;
   camera_perception_init_options_.root_dir =
-      config_path_ + "/perception/camera";
+      config_path_ + "/perception/data/camera";
   camera_perception_init_options_.conf_file = "obstacle.pt";
 
   if (InitAlgorithmPlugin() != 0) {

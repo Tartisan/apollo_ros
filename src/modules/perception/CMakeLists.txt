@@ -13,11 +13,12 @@ list(APPEND CMAKE_PREFIX_PATH "/usr/local/libtorch")
 ## is used, also find other catkin packages
 set(${PROJECT_NAME}_CATKIN_DEPS
   roscpp
-  pcl_ros
   sensor_msgs
   tf
   tf_conversions
   cv_bridge
+  pcl_ros
+  pcl_conversions
 )
 
 find_package(catkin REQUIRED COMPONENTS

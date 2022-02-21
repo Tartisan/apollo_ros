@@ -36,8 +36,8 @@ bool RecognitionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) 
   std::string config_path;
   nh.param("config_path", config_path,
            std::string(
-               "/perception/onboard/lidar/recognition_conf.pb.txt"));
-  std::string which_car = cyber::common::CarConfigFilePath();
+               "/perception/conf/lidar/recognition_conf.pb.txt"));
+  std::string which_car = cyber::common::GetConfigPath();
   if (!cyber::common::GetProtoFromFile(which_car + config_path,
                                        &comp_config)) {
     AERROR << "Get config failed: " << which_car + config_path;

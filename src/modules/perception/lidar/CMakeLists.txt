@@ -73,9 +73,9 @@ cuda_add_library(perception_lidar
   lib/tracker/multi_lidar_fusion/mlf_motion_measurement.cc
   lib/tracker/multi_lidar_fusion/mlf_motion_refiner.cc
   lib/tracker/multi_lidar_fusion/mlf_shape_filter.cc
-  lib/tracker/multi_lidar_fusion/mlf_tracker.cc
   lib/tracker/multi_lidar_fusion/mlf_track_object_distance.cc
   lib/tracker/multi_lidar_fusion/mlf_track_object_matcher.cc
+  lib/tracker/multi_lidar_fusion/mlf_tracker.cc
   # lib/tracker/semantic_map/evaluator_manager.cc
   # tools
   # tools/exporter/msg_exporter.cc

@@ -5,10 +5,4 @@
   <node name="lidar_detection" type="lidar_detection" pkg="perception" output="screen"> # launch-prefix="gdb -ex --args"
     <param name="config_path"   type="string" value="/perception/onboard/lidar/velodyne64_detection_conf.pb.txt"/>
   </node>
-  <node name="lidar_recognition" type="lidar_recognition" pkg="perception" output="screen"> # launch-prefix="gdb -ex --args"
-    <param name="config_path"   type="string" value="/perception/onboard/lidar/recognition_conf.pb.txt"/>
-  </node>
-  <node name="fusion" type="fusion" pkg="perception" output="screen"> # launch-prefix="gdb -ex --args"
-    <param name="config_path"   type="string" value="/perception/onboard/fusion/fusion_component_conf.pb.txt"/>
-  </node>
 </launch>

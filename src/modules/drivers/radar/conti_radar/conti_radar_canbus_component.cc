@@ -44,7 +44,7 @@ ContiRadarCanbusComponent::~ContiRadarCanbusComponent() { Stop(); }
 
 bool ContiRadarCanbusComponent::Init(ros::NodeHandle nh,
                                      ros::NodeHandle private_nh) {
-  std::string car_path = cyber::common::CarConfigFilePath();
+  std::string car_path = cyber::common::GetConfigPath();
   // ros parameters
   std::string config_file_path;
   nh.param(

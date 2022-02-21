@@ -23,6 +23,7 @@
 
 #include "tf2/buffer_core.h"
 #include "tf2/convert.h"
+#include <tf2_msgs/TFMessage.h>
 
 // #include "cyber/node/node.h"
 #include "modules/transform/buffer_interface.h"
@@ -128,7 +129,7 @@ class Buffer : public BufferInterface, public tf2::BufferCore {
           transform,
       bool is_static);
   void ROSSubscriptionCallbackImpl(
-      const geometry_msgs::TransformStamped::ConstPtr& msg_evt,
+      const ros::MessageEvent<tf2_msgs::TFMessage const>& msg_evt, 
       bool is_static);
 
   void TF2MsgToCyber(const geometry_msgs::TransformStamped& tf2_trans_stamped,

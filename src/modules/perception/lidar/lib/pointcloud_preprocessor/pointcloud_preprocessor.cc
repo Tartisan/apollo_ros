@@ -22,6 +22,7 @@
 #include "modules/perception/base/object_pool_types.h"
 #include "modules/perception/lib/config_manager/config_manager.h"
 #include "modules/perception/lidar/common/lidar_log.h"
+#include "modules/perception/lidar/common/lidar_timer.h"
 #include "modules/perception/lidar/lib/pointcloud_preprocessor/proto/pointcloud_preprocessor_config.pb.h"
 
 namespace apollo {
@@ -70,6 +71,7 @@ bool PointCloudPreprocessor::Preprocess(
   if (frame == nullptr) {
     return false;
   }
+  Timer timer;
   if (frame->cloud == nullptr) {
     frame->cloud = base::PointFCloudPool::Instance().Get();
   }
@@ -77,9 +79,14 @@ bool PointCloudPreprocessor::Preprocess(
     frame->world_cloud = base::PointDCloudPool::Instance().Get();
   }
   frame->cloud->set_timestamp(message->measurement_time());
+  double instance_time = timer.toc(true);
   if (message->point_size() > 0) {
+    // frame->cloud->clear();
+    // frame->cloud->resize(message->point_size());
+    // double resize_time = timer.toc(true);
     frame->cloud->reserve(message->point_size());
     base::PointF point;
+    int valid_pos = 0;
     for (int i = 0; i < message->point_size(); ++i) {
       const apollo::drivers::PointXYZIT& pt = message->point(i);
       if (filter_naninf_points_) {
@@ -104,14 +111,26 @@ bool PointCloudPreprocessor::Preprocess(
       if (filter_high_z_points_ && pt.z() > z_threshold_) {
         continue;
       }
+      // auto &point = frame->cloud->at(valid_pos);
       point.x = pt.x();
       point.y = pt.y();
       point.z = pt.z();
       point.intensity = static_cast<float>(pt.intensity());
+      // frame->cloud->points_timestamp(valid_pos)
+      //   = static_cast<double>(pt.timestamp()) * 1e-9;
+      // // points_heighs/beam_id/label will use the default value
+      // frame->cloud->points_beam_id(valid_pos) = valid_pos;
       frame->cloud->push_back(point, static_cast<double>(pt.timestamp()) * 1e-9,
                               std::numeric_limits<float>::max(), i, 0);
+      ++valid_pos;
     }
+    // frame->cloud->resize(valid_pos);
+    double fill_time = timer.toc(true);
     TransformCloud(frame->cloud, frame->lidar2world_pose, frame->world_cloud);
+    double transform_time = timer.toc(true);
+    AINFO << "preprocessor, instance: " << instance_time 
+          << "\tfill: " << fill_time << "\ttransform: " << transform_time;
+    AINFO << "Preprocessor filter points: " << message->point_size() << " to " << valid_pos;
   }
   return true;
 }

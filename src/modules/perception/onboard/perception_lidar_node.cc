@@ -14,8 +14,8 @@ class FusionLidarDetection {
 public:
   FusionLidarDetection(ros::NodeHandle nh, ros::NodeHandle private_nh) {
     detection_.Init(nh, private_nh);
-    recognition_.Init(nh, private_nh);
-    fusion_.Init(nh, private_nh);
+    // recognition_.Init(nh, private_nh);
+    // fusion_.Init(nh, private_nh);
 
     std::string input_channel;
     std::string output_channel;
@@ -34,8 +34,8 @@ private:
   ros::Subscriber reader_;
   ros::Publisher writer_;
   DetectionComponent detection_;
-  RecognitionComponent recognition_;
-  FusionComponent fusion_;
+  // RecognitionComponent recognition_;
+  // FusionComponent fusion_;
 
 private: 
   void CallbackVelodyne64(
@@ -47,18 +47,18 @@ private:
       AERROR << "Lidar detection failed!";
       return;
     }
-    auto sensor_frame_message = std::make_shared<SensorFrameMessage>();
-    status = recognition_.Proc(lidar_frame_message, sensor_frame_message);
-    if (!status) {
-      AERROR << "Lidar recognition failed!";
-      return;
-    }
-    auto output_message = std::make_shared<PerceptionObstacles>();
-    status = fusion_.Proc(sensor_frame_message, output_message);
-    if (!status) {
-      AERROR << "Lidar fusion failed!";
-      return;
-    }
+    // auto sensor_frame_message = std::make_shared<SensorFrameMessage>();
+    // status = recognition_.Proc(lidar_frame_message, sensor_frame_message);
+    // if (!status) {
+    //   AERROR << "Lidar recognition failed!";
+    //   return;
+    // }
+    // auto output_message = std::make_shared<PerceptionObstacles>();
+    // status = fusion_.Proc(sensor_frame_message, output_message);
+    // if (!status) {
+    //   AERROR << "Lidar fusion failed!";
+    //   return;
+    // }
     // writer_.publish(*output_message);
   }
 

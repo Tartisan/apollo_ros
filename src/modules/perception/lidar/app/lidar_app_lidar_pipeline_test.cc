@@ -110,8 +110,8 @@ TEST_F(LidarAppPipelineTest, lidar_app_pipeline_test) {
 
 #ifdef PERCEPTION_LIDAR_USE_COMMON_MESSAGE
 TEST_F(LidarAppPipelineTest, lidar_app_pipeline_test2) {
-  std::string pcd_path = "./data/perception/lidar/files/";
-  std::string pose_path = "./data/perception/lidar/poses/";
+  std::string pcd_path = "./data/lidar/files/";
+  std::string pose_path = "./data/lidar/poses/";
   std::vector<std::string> pcd_file_names;
   common::GetFileList(pcd_path, ".pcd", &pcd_file_names);
   std::string file_name;
