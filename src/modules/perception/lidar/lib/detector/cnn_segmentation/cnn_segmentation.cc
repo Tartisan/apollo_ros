@@ -316,7 +316,7 @@ bool CNNSegmentation::Detect(const LidarDetectorOptions& options,
 
   // processing clustering
   GetObjectsFromSppEngine(&frame->segmented_objects);
-
+  AINFO << "CNNSEG: segmented_objects: " << frame->segmented_objects.size();
   AINFO << "CNNSEG: mapping: " << mapping_time_ << "\t"
         << " feature: " << feature_time_ << "\t"
         << " infer: " << infer_time_ << "\t"
@@ -362,7 +362,7 @@ void CNNSegmentation::GetObjectsFromSppEngine(
         original_cloud_, lidar_frame_ref_->roi_indices,
         lidar_frame_ref_->non_ground_indices);
     if (num_foreground == 0) {
-      ADEBUG << "No foreground segmentation output";
+      AINFO << "No foreground segmentation output";
     }
   }
 
@@ -454,6 +454,8 @@ void CNNSegmentation::GetObjectsFromSppEngine(
     ++valid;
   }
   objects->resize(valid);
+  AINFO << "Clusters size from " << num_foreground << " to " << valid
+        << " after min_pts filter";
 
   // add additional object seg logic with ncut if cnnseg miss detects
   /*if (cnnseg_param_.fill_recall_with_ncut() && secondary_segmentor) {

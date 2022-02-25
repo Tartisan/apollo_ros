@@ -72,9 +72,9 @@ RUN tar xzf /root/protobuf-3.5.1.1.tar.gz -C /root && \
     ldconfig && \
     rm -rf /protobuf-3.5.1.1.tar.gz /root/protobuf-3.5.1.1*
 
-## libtorch 1.7.0
-COPY files/libtorch-cxx11-abi-shared-with-deps-1.7.0+cu101.zip /root
-RUN cd /root && unzip libtorch-cxx11-abi-shared-with-deps-1.7.0+cu101.zip && \
+## libtorch 1.9.0
+COPY files/libtorch-cxx11-abi-shared-with-deps-1.9.0+cu111.zip /root
+RUN cd /root && unzip libtorch-cxx11-abi-shared-with-deps-1.9.0+cu111.zip && \
     mv libtorch /usr/local/ && \
     rm -rf /root/libtorch*
 
@@ -94,6 +94,12 @@ RUN cd /root && tar -xzvf abseil-cpp.tar.gz && \
     cmake --build . --target install && \
     rm -rf /root/abseil-cpp*
 
+## dependencies
+RUN apt-get update -y && apt-get install -y \
+    ros-melodic-jsk-recognition-msgs \
+    ros-melodic-jsk-rviz-plugins \
+    && rm -rf /var/lib/apt/lists/*
+COPY files/.bashrc /root
 
 # ### ------------------  opencv4.4 ---------------------
 # RUN wget -O opencv-4.4.0.tar.gz https://github.com/opencv/opencv/archive/refs/tags/4.4.0.tar.gz

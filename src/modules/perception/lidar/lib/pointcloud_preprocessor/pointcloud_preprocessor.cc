@@ -79,13 +79,17 @@ bool PointCloudPreprocessor::Preprocess(
     frame->world_cloud = base::PointDCloudPool::Instance().Get();
   }
   frame->cloud->set_timestamp(message->measurement_time());
+  frame->world_cloud->set_timestamp(message->measurement_time());
   double instance_time = timer.toc(true);
   if (message->point_size() > 0) {
-    // frame->cloud->clear();
-    // frame->cloud->resize(message->point_size());
-    // double resize_time = timer.toc(true);
-    frame->cloud->reserve(message->point_size());
-    base::PointF point;
+    frame->cloud->clear();
+    frame->cloud->resize(message->point_size());
+    frame->world_cloud->clear();
+    frame->world_cloud->resize(message->point_size());
+    double x_offset = frame->lidar2world_pose(0, 3);
+    double y_offset = frame->lidar2world_pose(1, 3);
+    double z_offset = frame->lidar2world_pose(2, 3);
+    // base::PointF point;
     int valid_pos = 0;
     for (int i = 0; i < message->point_size(); ++i) {
       const apollo::drivers::PointXYZIT& pt = message->point(i);
@@ -99,34 +103,46 @@ bool PointCloudPreprocessor::Preprocess(
           continue;
         }
       }
-      Eigen::Vector3d vec3d_lidar(pt.x(), pt.y(), pt.z());
-      Eigen::Vector3d vec3d_novatel =
-          options.sensor2novatel_extrinsics * vec3d_lidar;
-      if (filter_nearby_box_points_ && vec3d_novatel[0] < box_forward_x_ &&
-          vec3d_novatel[0] > box_backward_x_ &&
-          vec3d_novatel[1] < box_forward_y_ &&
-          vec3d_novatel[1] > box_backward_y_) {
+      if (filter_nearby_box_points_
+          && pt.x() < box_forward_x_ && pt.x() > box_backward_x_
+          && pt.y() < box_forward_y_ && pt.y() > box_backward_y_) {
         continue;
       }
+      // Eigen::Vector3d vec3d_lidar(pt.x(), pt.y(), pt.z());
+      // Eigen::Vector3d vec3d_novatel =
+      //     options.sensor2novatel_extrinsics * vec3d_lidar;
+      // if (filter_nearby_box_points_ && vec3d_novatel[0] < box_forward_x_ &&
+      //     vec3d_novatel[0] > box_backward_x_ &&
+      //     vec3d_novatel[1] < box_forward_y_ &&
+      //     vec3d_novatel[1] > box_backward_y_) {
+      //   continue;
+      // }
       if (filter_high_z_points_ && pt.z() > z_threshold_) {
         continue;
       }
-      // auto &point = frame->cloud->at(valid_pos);
-      point.x = pt.x();
-      point.y = pt.y();
-      point.z = pt.z();
-      point.intensity = static_cast<float>(pt.intensity());
-      // frame->cloud->points_timestamp(valid_pos)
-      //   = static_cast<double>(pt.timestamp()) * 1e-9;
-      // // points_heighs/beam_id/label will use the default value
-      // frame->cloud->points_beam_id(valid_pos) = valid_pos;
-      frame->cloud->push_back(point, static_cast<double>(pt.timestamp()) * 1e-9,
-                              std::numeric_limits<float>::max(), i, 0);
+
+      auto &pointf = frame->cloud->at(valid_pos);
+      pointf.x = pt.x();
+      pointf.y = pt.y();
+      pointf.z = pt.z();
+      pointf.intensity = static_cast<float>(pt.intensity());
+      // frame->cloud->push_back(point, static_cast<double>(pt.timestamp()) * 1e-9,
+      //                         std::numeric_limits<float>::max(), i, 0);
+      frame->cloud->points_timestamp(valid_pos) = static_cast<double>(pt.timestamp()) * 1e-9;
+      frame->cloud->points_beam_id(valid_pos) = valid_pos;
+
+      auto &pointd = frame->world_cloud->at(valid_pos);
+      pointd.x = pt.x() + x_offset;
+      pointd.y = pt.y() + y_offset;
+      pointd.z = pt.z() + z_offset;
+      frame->world_cloud->points_timestamp(valid_pos) = static_cast<double>(pt.timestamp()) * 1e-9;
+      frame->world_cloud->points_beam_id(valid_pos) = valid_pos;
       ++valid_pos;
     }
-    // frame->cloud->resize(valid_pos);
+    frame->cloud->resize(valid_pos);
+    frame->world_cloud->resize(valid_pos);
     double fill_time = timer.toc(true);
-    TransformCloud(frame->cloud, frame->lidar2world_pose, frame->world_cloud);
+    // TransformCloud(frame->cloud, frame->lidar2world_pose, frame->world_cloud);
     double transform_time = timer.toc(true);
     AINFO << "preprocessor, instance: " << instance_time 
           << "\tfill: " << fill_time << "\ttransform: " << transform_time;

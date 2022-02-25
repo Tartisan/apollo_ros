@@ -78,6 +78,8 @@ bool DetectionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) {
             "/perception/lidar_frame/segmented_objects", 1);
     pub_non_ground_points_ = nh.advertise<sensor_msgs::PointCloud2>(
         "/perception/lidar_frame/non_ground_points", 1);
+    pub_ground_points_ = nh.advertise<sensor_msgs::PointCloud2>(
+        "/perception/lidar_frame/ground_points", 1);
   }
 
   if (!InitAlgorithmPlugin()) {
@@ -203,9 +205,8 @@ void DetectionComponent::VisualizeLidarFrame(
     bounding_box.dimensions.y = segment_object->size[1];
     bounding_box.dimensions.z = segment_object->size[2];
 
-    // std::cout << "heading: " << segment_object->theta << std::endl;
     geometry_msgs::Quaternion quat =
-        tf::createQuaternionMsgFromYaw(segment_object->theta * M_PI / 180.);
+        tf::createQuaternionMsgFromYaw(segment_object->theta);
     bounding_box.pose.orientation = quat;
     bounding_boxes.boxes.push_back(bounding_box);
   }
@@ -213,20 +214,33 @@ void DetectionComponent::VisualizeLidarFrame(
 
   // non_ground_points
   pcl::PointCloud<pcl::PointXYZI> non_ground_points;
+  pcl::PointCloud<pcl::PointXYZI> ground_points;
   AINFO << "non_ground_indices size: " << frame->non_ground_indices.indices.size();
-  for (const auto &indice : frame->non_ground_indices.indices) {
+  int j = 0;
+  for (int i = 0; i < int(frame->cloud->size()); ++i) {
     pcl::PointXYZI point;
-    point.x = frame->cloud->at(indice).x;
-    point.y = frame->cloud->at(indice).y;
-    point.z = frame->cloud->at(indice).z;
-    point.intensity = frame->cloud->at(indice).intensity;
-    non_ground_points.push_back(point);
+    point.x = frame->cloud->at(i).x;
+    point.y = frame->cloud->at(i).y;
+    point.z = frame->cloud->at(i).z;
+    point.intensity = frame->cloud->at(i).intensity;
+
+    if (i == frame->non_ground_indices.indices[j]) {
+      non_ground_points.push_back(point);
+      j++;
+    } else {
+      ground_points.push_back(point);
+    }
   }
   non_ground_points.header.frame_id = header.frame_id();
   non_ground_points.header.stamp = header.lidar_timestamp();
   non_ground_points.width = non_ground_points.points.size();
   non_ground_points.height = 1;
   pub_non_ground_points_.publish(non_ground_points);
+  ground_points.header.frame_id = header.frame_id();
+  ground_points.header.stamp = header.lidar_timestamp();
+  ground_points.width = ground_points.points.size();
+  ground_points.height = 1;
+  pub_ground_points_.publish(ground_points);
 }
 
 } // namespace onboard

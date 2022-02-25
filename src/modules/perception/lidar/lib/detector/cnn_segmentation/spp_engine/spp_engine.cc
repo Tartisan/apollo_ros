@@ -138,10 +138,13 @@ size_t SppEngine::RemoveGroundPointsInForegroundCluster(
   mask_.RemoveIndicesOfIndices(roi_indices, roi_non_ground_indices);
   mask_.Flip();
   // at this time, all ground points has mask value 0
+  size_t orig_size = clusters_.size();
   for (size_t i = 0; i < clusters_.size(); ++i) {
     clusters_[static_cast<int>(i)]->RemovePoints(mask_);
   }
   clusters_.RemoveEmptyClusters();
+  AINFO << "Clusters size from " << orig_size << " to " << clusters_.size()
+        << " after remove ground points";
   return clusters_.size();
 }
 

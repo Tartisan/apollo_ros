@@ -24,7 +24,7 @@ docker build -t nvidia/cuda:11.1-cudnn8-melodic-20211230 -f ubuntu18-cuda11.1-ro
 Ubuntu 18.04
 Nvidia Driver 460.91
 CUDA 11.1
-Cudnn 8
+Cudnn 8.0.5
 TensorRT 7.2.1
 libtorch 1.7.0
 cmake 3.20
@@ -56,7 +56,8 @@ source devel/setup.bash
 
 | package               | node  	                |
 |-------------------    |--------------------	    |
-| perception       	    | fusion_camera_detection	|
+| perception       	    | perception_camera_node	|
+| perception       	    | perception_lidar_node	    |
 | drivers 	            | conti_radar               |
 | transform       	    | static_transform	        |
 | data_conversion       | record_to_rosbag	        |

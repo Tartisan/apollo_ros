@@ -67,6 +67,7 @@ class DetectionComponent {
   
   ros::Publisher pub_segmented_objects_;
   ros::Publisher pub_non_ground_points_;
+  ros::Publisher pub_ground_points_;
   // std::shared_ptr<apollo::cyber::Writer<LidarFrameMessage>> writer_;
 };
 
