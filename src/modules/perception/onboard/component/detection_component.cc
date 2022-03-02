@@ -76,6 +76,8 @@ bool DetectionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) {
     pub_segmented_objects_ =
         nh.advertise<jsk_recognition_msgs::BoundingBoxArray>(
             "/perception/lidar_frame/segmented_objects", 1);
+    pub_objects_polygon_ = nh.advertise<visualization_msgs::MarkerArray>(
+        "/perception/lidar_frame/polygon", 1);
     pub_non_ground_points_ = nh.advertise<sensor_msgs::PointCloud2>(
         "/perception/lidar_frame/non_ground_points", 1);
     pub_ground_points_ = nh.advertise<sensor_msgs::PointCloud2>(
@@ -194,29 +196,56 @@ void DetectionComponent::VisualizeLidarFrame(
   jsk_recognition_msgs::BoundingBoxArray bounding_boxes;
   bounding_boxes.header.frame_id = header.frame_id();
   bounding_boxes.header.stamp = ros::Time(header.timestamp_sec());
+  jsk_recognition_msgs::BoundingBox bounding_box;
+  bounding_box.header.frame_id = header.frame_id();
+  bounding_box.header.stamp = ros::Time(header.timestamp_sec());
+  visualization_msgs::MarkerArray polygons;
+  visualization_msgs::Marker polygon;
+  polygon.header.frame_id = header.frame_id();
+  polygon.header.stamp = ros::Time(header.timestamp_sec());
+  polygon.type = visualization_msgs::Marker::LINE_STRIP;
+  polygon.action = visualization_msgs::Marker::ADD;
+  int object_count = 0;
   for (const auto &segment_object : frame->segmented_objects) {
-    jsk_recognition_msgs::BoundingBox bounding_box;
-    bounding_box.header.frame_id = header.frame_id();
-    bounding_box.header.stamp = ros::Time(header.timestamp_sec());
     bounding_box.pose.position.x = segment_object->center[0];
     bounding_box.pose.position.y = segment_object->center[1];
     bounding_box.pose.position.z = segment_object->center[2];
     bounding_box.dimensions.x = segment_object->size[0];
     bounding_box.dimensions.y = segment_object->size[1];
     bounding_box.dimensions.z = segment_object->size[2];
-
+    bounding_box.label = static_cast<uint32_t>(segment_object->type);
     geometry_msgs::Quaternion quat =
         tf::createQuaternionMsgFromYaw(segment_object->theta);
     bounding_box.pose.orientation = quat;
     bounding_boxes.boxes.push_back(bounding_box);
+
+    polygon.id = object_count++;
+    polygon.scale.x = 0.05;
+    polygon.color.r = 1;
+    polygon.color.g = 1;
+    polygon.color.b = 1;
+    polygon.color.a = 1;
+    polygon.pose.orientation.w = 1.0;
+    polygon.points.clear();
+    geometry_msgs::Point point;
+    int polygon_pts_size = segment_object->polygon.size();
+    for (int i = 0; i <= polygon_pts_size; ++i) {
+      const auto &p = segment_object->polygon.at(i % polygon_pts_size);
+      point.x = p.x;
+      point.y = p.y;
+      point.z = p.z;
+      polygon.points.push_back(point);
+    }
+    polygons.markers.push_back(polygon);
   }
   pub_segmented_objects_.publish(bounding_boxes);
+  pub_objects_polygon_.publish(polygons);
 
   // non_ground_points
   pcl::PointCloud<pcl::PointXYZI> non_ground_points;
   pcl::PointCloud<pcl::PointXYZI> ground_points;
   AINFO << "non_ground_indices size: " << frame->non_ground_indices.indices.size();
-  int j = 0;
+  int non_ground_indice = 0;
   for (int i = 0; i < int(frame->cloud->size()); ++i) {
     pcl::PointXYZI point;
     point.x = frame->cloud->at(i).x;
@@ -224,9 +253,9 @@ void DetectionComponent::VisualizeLidarFrame(
     point.z = frame->cloud->at(i).z;
     point.intensity = frame->cloud->at(i).intensity;
 
-    if (i == frame->non_ground_indices.indices[j]) {
+    if (i == frame->non_ground_indices.indices[non_ground_indice]) {
       non_ground_points.push_back(point);
-      j++;
+      non_ground_indice++;
     } else {
       ground_points.push_back(point);
     }

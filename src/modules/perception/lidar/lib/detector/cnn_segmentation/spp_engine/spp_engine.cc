@@ -26,9 +26,10 @@ namespace lidar {
 void SppEngine::Init(size_t width, size_t height, float range,
                      const SppParams& param, const std::string& sensor_name) {
   // initialize connect component detector
-  detector_2d_cc_.Init(static_cast<int>(height), static_cast<int>(width));
+  detector_2d_cc_.Init(static_cast<int>(height), static_cast<int>(width), 
+                       sensor_name);
   detector_2d_cc_.SetData(data_.obs_prob_data_ref, data_.offset_data,
-                          static_cast<float>(height) / (2.f * range),
+                          static_cast<float>(height) / (2.f * range), range, 
                           data_.objectness_threshold);
   // initialize label image
   labels_2d_.Init(width, height, sensor_name);

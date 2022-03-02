@@ -16,7 +16,7 @@ You can build this project under CPU-Only machine(which only build  those parts 
 The system is also tested on GPU machine including Nvidia GeForce GTX 1080 Ti and 2070 Super. Please install **Nvidia Driver**, [**Docker**](https://docs.docker.com/install/linux/docker-ce/ubuntu/), and **nvidia-container-toolkit**. The build process of docker image could reference to [ubuntu18-cuda11.1-ros.Dockerfile](docker/build/ubuntu18-cuda11.1-ros.Dockerfile). You can build the docker like this (the tag has been used in dev_start.sh, so if you changed tag below, the image name should also be modified in dev_start.sh).
 ```
 cd docker/build
-docker build -t nvidia/cuda:11.1-cudnn8-melodic-20211230 -f ubuntu18-cuda11.1-ros.Dockerfile .
+docker build -t nvidia/cuda:11.1-cudnn8-melodic-libtorch1.9.0 -f ubuntu18-cuda11.1-ros.Dockerfile .
 ```
 
 **Dependencies**
@@ -26,7 +26,7 @@ Nvidia Driver 460.91
 CUDA 11.1
 Cudnn 8.0.5
 TensorRT 7.2.1
-libtorch 1.7.0
+libtorch 1.9.0
 cmake 3.20
 ```
 

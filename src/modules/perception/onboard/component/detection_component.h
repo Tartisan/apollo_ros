@@ -20,6 +20,8 @@
 #include <string>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include "cyber/cyber.h"
 
@@ -66,6 +68,7 @@ class DetectionComponent {
   std::unique_ptr<lidar::BaseLidarObstacleDetection> detector_;
   
   ros::Publisher pub_segmented_objects_;
+  ros::Publisher pub_objects_polygon_;
   ros::Publisher pub_non_ground_points_;
   ros::Publisher pub_ground_points_;
   // std::shared_ptr<apollo::cyber::Writer<LidarFrameMessage>> writer_;

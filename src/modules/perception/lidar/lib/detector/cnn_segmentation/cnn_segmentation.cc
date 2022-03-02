@@ -222,7 +222,9 @@ bool CNNSegmentation::InitClusterAndBackgroundSegmentation() {
     roi_filter_time_ = timer.toc(true);
     AINFO << "after roi filter";
     GroundDetectorOptions ground_detector_options;
-    ground_detector_->Detect(ground_detector_options, lidar_frame_ref_);
+    if (cnnseg_param_.use_ground_detector()) {
+      ground_detector_->Detect(ground_detector_options, lidar_frame_ref_);
+    }
     if (lidar_frame_ref_->cloud != original_cloud_) {
       lidar_frame_ref_->cloud = original_cloud_;
     }

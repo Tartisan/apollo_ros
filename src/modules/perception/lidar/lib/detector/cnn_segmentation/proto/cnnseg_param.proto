@@ -11,6 +11,7 @@ message CNNSegParam {
   optional uint32 gpu_id = 6 [default = 0];
 
   // for method SppEngine
+  optional bool use_ground_detector = 15 [default = true];
   optional string ground_detector = 7
       [default = "SpatioTemporalGroundDetector"];
   optional string roi_filter = 8 [default = "HdmapROIFilter"];

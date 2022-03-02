@@ -36,11 +36,19 @@ inline int F2I(float val, float ori, float scale) {
 
 // for axis rotated case
 inline void GroupPc2Pixel(float pc_x, float pc_y, float scale, float range,
-                          int* x, int* y) {
+                          int* col, int* row) {
   float fx = (range - (0.707107f * (pc_x + pc_y))) * scale;
   float fy = (range - (0.707107f * (pc_x - pc_y))) * scale;
-  *x = fx < 0 ? -1 : static_cast<int>(fx);
-  *y = fy < 0 ? -1 : static_cast<int>(fy);
+  *col = fx < 0 ? -1 : static_cast<int>(fx);
+  *row = fy < 0 ? -1 : static_cast<int>(fy);
+}
+
+inline void GroupPixel2Pc(int col, int row, float resolution, float range,
+                          double *pc_x, double *pc_y) {
+  float tmp_x = (range - col * resolution) * 1.414214f;
+  float tmp_y = (range - row * resolution) * 1.414214f;
+  *pc_x = (tmp_x + tmp_y) * 0.5;
+  *pc_y = (tmp_x - tmp_y) * 0.5;
 }
 
 // for axis aligned case

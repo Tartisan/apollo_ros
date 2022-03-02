@@ -38,7 +38,7 @@ class RTLogger : public nvinfer1::ILogger {
     }
   }
 } rt_gLogger;
-#define LOAD_DEBUG 0
+#define LOAD_DEBUG 1
 
 namespace apollo {
 namespace perception {
@@ -544,6 +544,7 @@ void RTNet::addLayer(const LayerParameter &layer_param,
                      WeightMap *weight_map, nvinfer1::INetworkDefinition *net,
                      TensorMap *tensor_map,
                      TensorModifyMap *tensor_modify_map) {
+  AINFO << "layer_param.type(): " << layer_param.type();
   if (layer_param.type() == "Convolution") {
     addConvLayer(layer_param, inputs, weight_map, net, tensor_map,
                  tensor_modify_map);
