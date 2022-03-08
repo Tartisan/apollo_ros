@@ -10,6 +10,8 @@ Have you wondered, what if **everything can be run as a standard ROS node** and 
 
 **All contributions are welcome!!** There are so many things that can be improved. Please raise issues and/or make pull requests if you would like to work on it too. Thank you.
 
+![cnnseg](perception_lidar_2018-01-03-19-37-16.gif)
+
 ## Environment Information
 You can build this project under CPU-Only machine(which only build  those parts that do not depend on GPU). 
 
@@ -57,7 +59,7 @@ source devel/setup.bash
 | package               | node  	                |
 |-------------------    |--------------------	    |
 | perception       	    | perception_camera_node	|
-| perception       	    | perception_lidar_node	    |
+| perception       	    | perception_lidar_node (enclude: cnnseg, pointpilar)|
 | drivers 	            | conti_radar               |
 | transform       	    | static_transform	        |
 | data_conversion       | record_to_rosbag	        |

@@ -152,20 +152,20 @@ bool DetectionComponent::InternalProc(
   Eigen::Affine3d pose_novatel = Eigen::Affine3d::Identity();
   const double lidar_query_tf_timestamp =
       timestamp - lidar_query_tf_offset_ * 0.001;
-  if (!lidar2world_trans_.GetSensor2worldTrans(lidar_query_tf_timestamp, &pose,
-                                               &pose_novatel)) {
-    out_message->error_code_ = apollo::common::ErrorCode::PERCEPTION_ERROR_TF;
-    AERROR << "Failed to get pose at time: " << std::setprecision(19)
-           << lidar_query_tf_timestamp;
-    return false;
-  }
+  // if (!lidar2world_trans_.GetSensor2worldTrans(lidar_query_tf_timestamp, &pose,
+  //                                              &pose_novatel)) {
+  //   out_message->error_code_ = apollo::common::ErrorCode::PERCEPTION_ERROR_TF;
+  //   AERROR << "Failed to get pose at time: " << std::setprecision(19)
+  //          << lidar_query_tf_timestamp;
+  //   return false;
+  // }
 
   frame->lidar2world_pose = pose;
   frame->novatel2world_pose = pose_novatel;
 
   lidar::LidarObstacleDetectionOptions detect_opts;
   detect_opts.sensor_name = sensor_name_;
-  lidar2world_trans_.GetExtrinsics(&detect_opts.sensor2novatel_extrinsics);
+  // lidar2world_trans_.GetExtrinsics(&detect_opts.sensor2novatel_extrinsics);
   lidar::LidarProcessResult ret =
       detector_->Process(detect_opts, in_message, frame.get());
   if (ret.error_code != lidar::LidarErrorCode::Succeed) {
@@ -197,6 +197,7 @@ void DetectionComponent::VisualizeLidarFrame(
   polygon.header.stamp = ros::Time(header.timestamp_sec());
   polygon.type = visualization_msgs::Marker::LINE_STRIP;
   polygon.action = visualization_msgs::Marker::ADD;
+  polygon.lifetime = ros::Time(0.1);
   int object_count = 0;
   for (const auto &segment_object : frame->segmented_objects) {
     bounding_box.pose.position.x = segment_object->center[0];

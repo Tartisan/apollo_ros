@@ -79,16 +79,16 @@ bool PointCloudPreprocessor::Preprocess(
     frame->world_cloud = base::PointDCloudPool::Instance().Get();
   }
   frame->cloud->set_timestamp(message->measurement_time());
-  frame->world_cloud->set_timestamp(message->measurement_time());
+  // frame->world_cloud->set_timestamp(message->measurement_time());
   double instance_time = timer.toc(true);
   if (message->point_size() > 0) {
     frame->cloud->clear();
     frame->cloud->resize(message->point_size());
-    frame->world_cloud->clear();
-    frame->world_cloud->resize(message->point_size());
-    double x_offset = frame->lidar2world_pose(0, 3);
-    double y_offset = frame->lidar2world_pose(1, 3);
-    double z_offset = frame->lidar2world_pose(2, 3);
+    // frame->world_cloud->clear();
+    // frame->world_cloud->resize(message->point_size());
+    // double x_offset = frame->lidar2world_pose(0, 3);
+    // double y_offset = frame->lidar2world_pose(1, 3);
+    // double z_offset = frame->lidar2world_pose(2, 3);
     // base::PointF point;
     int valid_pos = 0;
     for (int i = 0; i < message->point_size(); ++i) {
@@ -131,16 +131,16 @@ bool PointCloudPreprocessor::Preprocess(
       frame->cloud->points_timestamp(valid_pos) = static_cast<double>(pt.timestamp()) * 1e-9;
       frame->cloud->points_beam_id(valid_pos) = valid_pos;
 
-      auto &pointd = frame->world_cloud->at(valid_pos);
-      pointd.x = pt.x() + x_offset;
-      pointd.y = pt.y() + y_offset;
-      pointd.z = pt.z() + z_offset;
-      frame->world_cloud->points_timestamp(valid_pos) = static_cast<double>(pt.timestamp()) * 1e-9;
-      frame->world_cloud->points_beam_id(valid_pos) = valid_pos;
+      // auto &pointd = frame->world_cloud->at(valid_pos);
+      // pointd.x = pt.x() + x_offset;
+      // pointd.y = pt.y() + y_offset;
+      // pointd.z = pt.z() + z_offset;
+      // frame->world_cloud->points_timestamp(valid_pos) = static_cast<double>(pt.timestamp()) * 1e-9;
+      // frame->world_cloud->points_beam_id(valid_pos) = valid_pos;
       ++valid_pos;
     }
     frame->cloud->resize(valid_pos);
-    frame->world_cloud->resize(valid_pos);
+    // frame->world_cloud->resize(valid_pos);
     double fill_time = timer.toc(true);
     // TransformCloud(frame->cloud, frame->lidar2world_pose, frame->world_cloud);
     double transform_time = timer.toc(true);

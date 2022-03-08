@@ -200,7 +200,7 @@ bool CNNSegmentation::InitClusterAndBackgroundSegmentation() {
   spp_engine_.Init(width_, height_, range_, params, sensor_name_);
 
   roi_cloud_ = base::PointFCloudPool::Instance().Get();
-  roi_world_cloud_ = base::PointDCloudPool::Instance().Get();
+  // roi_world_cloud_ = base::PointDCloudPool::Instance().Get();
 
   // init thread worker
   worker_.Bind([&]() {
@@ -211,8 +211,8 @@ bool CNNSegmentation::InitClusterAndBackgroundSegmentation() {
         roi_filter_->Filter(roi_filter_options, lidar_frame_ref_)) {
       roi_cloud_->CopyPointCloud(*lidar_frame_ref_->cloud,
                                  lidar_frame_ref_->roi_indices);
-      roi_world_cloud_->CopyPointCloud(*lidar_frame_ref_->world_cloud,
-                                       lidar_frame_ref_->roi_indices);
+      // roi_world_cloud_->CopyPointCloud(*lidar_frame_ref_->world_cloud,
+      //                                  lidar_frame_ref_->roi_indices);
     } else {
       AINFO << "Fail to call roi filter, use origin cloud.";
       lidar_frame_ref_->roi_indices.indices.resize(original_cloud_->size());
@@ -221,10 +221,10 @@ bool CNNSegmentation::InitClusterAndBackgroundSegmentation() {
                 lidar_frame_ref_->roi_indices.indices.end(), 0);
       // note roi cloud's memory should be kept here
       *roi_cloud_ = *original_cloud_;
-      *roi_world_cloud_ = *original_world_cloud_;
+      // *roi_world_cloud_ = *original_world_cloud_;
     }
     lidar_frame_ref_->cloud = roi_cloud_;
-    lidar_frame_ref_->world_cloud = roi_world_cloud_;
+    // lidar_frame_ref_->world_cloud = roi_world_cloud_;
 
     roi_filter_time_ = timer.toc(true);
     AINFO << "after roi filter";
@@ -235,9 +235,9 @@ bool CNNSegmentation::InitClusterAndBackgroundSegmentation() {
     if (lidar_frame_ref_->cloud != original_cloud_) {
       lidar_frame_ref_->cloud = original_cloud_;
     }
-    if (lidar_frame_ref_->world_cloud != original_world_cloud_) {
-      lidar_frame_ref_->world_cloud = original_world_cloud_;
-    }
+    // if (lidar_frame_ref_->world_cloud != original_world_cloud_) {
+    //   lidar_frame_ref_->world_cloud = original_world_cloud_;
+    // }
     ground_detector_time_ = timer.toc(true);
     AINFO << "Roi-filter time: " << roi_filter_time_
           << "\tGround-detector time: " << ground_detector_time_;
@@ -283,21 +283,21 @@ bool CNNSegmentation::Detect(const LidarDetectorOptions& options,
     AERROR << "Input null frame cloud.";
     return false;
   }
-  if (frame->world_cloud == nullptr) {
-    AERROR << "Input null frame world cloud.";
-    return false;
-  }
+  // if (frame->world_cloud == nullptr) {
+  //   AERROR << "Input null frame world cloud.";
+  //   return false;
+  // }
   if (frame->cloud->size() == 0) {
     AERROR << "Input none points.";
     return false;
   }
-  if (frame->cloud->size() != frame->world_cloud->size()) {
-    AERROR << "Cloud size and world cloud size not consistent.";
-    return false;
-  }
+  // if (frame->cloud->size() != frame->world_cloud->size()) {
+  //   AERROR << "Cloud size and world cloud size not consistent.";
+  //   return false;
+  // }
   // record input cloud and lidar frame
   original_cloud_ = frame->cloud;
-  original_world_cloud_ = frame->world_cloud;
+  // original_world_cloud_ = frame->world_cloud;
   lidar_frame_ref_ = frame;
 
   // check output
@@ -369,12 +369,12 @@ void CNNSegmentation::GetObjectsFromSppEngine(
           roi_cloud_->points_label().at(i);
     }
   }
-  memcpy(&original_world_cloud_->mutable_points_height()->at(0),
-         &original_cloud_->points_height().at(0),
-         sizeof(float) * original_cloud_->size());
-  memcpy(&original_world_cloud_->mutable_points_label()->at(0),
-         &original_cloud_->points_label().at(0),
-         sizeof(uint8_t) * original_cloud_->size());
+  // memcpy(&original_world_cloud_->mutable_points_height()->at(0),
+  //        &original_cloud_->points_height().at(0),
+  //        sizeof(float) * original_cloud_->size());
+  // memcpy(&original_world_cloud_->mutable_points_label()->at(0),
+  //        &original_cloud_->points_label().at(0),
+  //        sizeof(uint8_t) * original_cloud_->size());
   if (cnnseg_param_.remove_ground_points()) {
     num_foreground = spp_engine_.RemoveGroundPointsInForegroundCluster(
         original_cloud_, lidar_frame_ref_->roi_indices,
@@ -413,8 +413,8 @@ void CNNSegmentation::GetObjectsFromSppEngine(
     //  << "cluster point ids size: " << cluster->point_ids.size();
     object->lidar_supplement.cloud.CopyPointCloud(*original_cloud_,
                                                   cluster->point_ids);
-    object->lidar_supplement.cloud_world.CopyPointCloud(*original_world_cloud_,
-                                                        cluster->point_ids);
+    // object->lidar_supplement.cloud_world.CopyPointCloud(*original_world_cloud_,
+    //                                                     cluster->point_ids);
 
     // for miss detection, try to fill recall with ncut
     /*if (cnnseg_param_.fill_recall_with_ncut()) {
