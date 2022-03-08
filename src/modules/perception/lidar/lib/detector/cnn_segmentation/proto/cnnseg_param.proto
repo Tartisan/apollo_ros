@@ -9,6 +9,7 @@ message CNNSegParam {
   optional bool do_classification = 4 [default = true];
   optional bool do_heading = 5 [default = true];
   optional uint32 gpu_id = 6 [default = 0];
+  optional bool visualize_output_blob = 16 [default = false];
 
   // for method SppEngine
   optional bool use_ground_detector = 15 [default = true];

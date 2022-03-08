@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <ros/ros.h>
 
 #include "gtest/gtest_prod.h"
 
@@ -61,6 +62,8 @@ class CNNSegmentation : public BaseLidarDetector {
 
   void MapPointToGrid(
       const std::shared_ptr<base::AttributePointCloud<base::PointF>>& pc_ptr);
+
+  void VisualizeOutputBlob();
 
   CNNSegParam cnnseg_param_;
   std::shared_ptr<inference::Inference> inference_;
@@ -123,6 +126,9 @@ class CNNSegmentation : public BaseLidarDetector {
   // secondary segmentation to improve miss detection
   // not found by neural networks !
   std::shared_ptr<BaseLidarDetector> secondary_segmentor;
+
+  ros::Publisher pub_category_pt_;
+  ros::Publisher pub_instance_pt_;
 
  private:
   const int kDefaultPointCloudSize = 120000;

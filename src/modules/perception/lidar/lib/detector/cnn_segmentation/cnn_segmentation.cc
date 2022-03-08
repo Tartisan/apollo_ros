@@ -17,6 +17,13 @@
 
 #include <map>
 
+#include <sensor_msgs/PointCloud2.h>
+#include <visualization_msgs/MarkerArray.h>
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl_ros/point_cloud.h>
+
 #include "modules/perception/lidar/lib/detector/cnn_segmentation/proto/cnnseg_config.pb.h"
 
 #include "cyber/common/file.h"
@@ -265,8 +272,8 @@ void CNNSegmentation::MapPointToGrid(
   }
 }
 
-bool CNNSegmentation::Detect(const LidarDetectorOptions& options,
-                              LidarFrame* frame) {
+bool CNNSegmentation::Detect(const LidarDetectorOptions& options, 
+                             LidarFrame* frame) {
   // check input
   if (frame == nullptr) {
     AERROR << "Input null frame ptr.";
@@ -325,6 +332,15 @@ bool CNNSegmentation::Detect(const LidarDetectorOptions& options,
         << " fg-seg: " << fg_seg_time_ << "\t"
         << " join: " << join_time_ << "\t"
         << " collect: " << collect_time_;
+
+  if (cnnseg_param_.visualize_output_blob()) {
+    static ros::NodeHandle nh;
+    pub_category_pt_ = nh.advertise<sensor_msgs::PointCloud2>(
+        "/perception/lidar/detector/category_pt", 1);
+    pub_instance_pt_ = nh.advertise<visualization_msgs::MarkerArray>(
+        "/perception/lidar/detector/instance_pt", 1);
+    VisualizeOutputBlob();
+  }
   return true;
 }
 
@@ -496,6 +512,76 @@ bool CNNSegmentation::GetConfigs(std::string* param_file,
   *engine_file = GetAbsolutePath(work_root, config.engine_file());
 
   return true;
+}
+
+void CNNSegmentation::VisualizeOutputBlob() {
+  // category_pt_blob
+  pcl::PointCloud<pcl::PointXYZRGB> category_pt;
+  float *obs_prob_data = category_pt_blob_->mutable_cpu_data();
+  for (int i = 0; i < original_cloud_->size(); ++i) {
+    const int id = point2grid_[i];
+    pcl::PointXYZRGB point;
+    point.x = original_cloud_->at(i).x;
+    point.y = original_cloud_->at(i).y;
+    point.z = original_cloud_->at(i).z;
+    point.r = 255;
+    point.g = 0;
+    point.b = 255;
+    if (id < 0 || *(obs_prob_data + id) < cnnseg_param_.objectness_thresh()) {
+      point.r = 255;
+      point.g = 255;
+      point.b = 255;
+    }
+    category_pt.points.push_back(point);
+  }
+  category_pt.header.frame_id = sensor_name_;
+  category_pt.width = category_pt.points.size();
+  category_pt.height = 1;
+  pub_category_pt_.publish(category_pt);
+
+  // instance_pt_blob
+  float *offset_data = instance_pt_blob_->mutable_cpu_data();
+  const float* offset_row_ptr = offset_data;
+  const float* offset_col_ptr = offset_data + height_ * width_;
+  visualization_msgs::MarkerArray arrow_list;
+  visualization_msgs::Marker arrow;
+  arrow.header.frame_id = sensor_name_;
+  arrow.header.stamp = ros::Time::now();
+  arrow.action = visualization_msgs::Marker::ADD;
+  arrow.type = visualization_msgs::Marker::ARROW;
+  arrow.pose.orientation.w = 1.0;
+  arrow.scale.x = 0.02;
+  arrow.scale.y = 0.04;
+  // Line list is blue
+  arrow.color.g = 0.8;
+  arrow.color.a = 1.0;
+  
+  float scale = static_cast<float>(height_) / (2.f * range_);
+  float resolution = 1.f / scale;
+  int count = 0;
+  for (int row = 0; row < height_; ++row) {
+    for (int col = 0; col < width_; ++col) {
+      bool is_object = *obs_prob_data++ >= cnnseg_param_.objectness_thresh();
+      int center_row = static_cast<int>(*offset_row_ptr++ * scale +
+                                        static_cast<float>(row) + 0.5f);
+      int center_col = static_cast<int>(*offset_col_ptr++ * scale +
+                                        static_cast<float>(col) + 0.5f);
+      center_row = std::max(0, std::min(height_ - 1, center_row));
+      center_col = std::max(0, std::min(width_ - 1, center_col));
+      if (is_object) {
+        arrow.id = count;
+        arrow.points.clear();
+        geometry_msgs::Point p;
+        GroupPixel2Pc(col, row, resolution, range_, &p.x, &p.y);
+        arrow.points.push_back(p);
+        GroupPixel2Pc(center_col, center_row, resolution, range_, &p.x, &p.y);
+        arrow.points.push_back(p);
+        arrow_list.markers.push_back(arrow);
+        count++;
+      }
+    }
+  }
+  pub_instance_pt_.publish(arrow_list);
 }
 
 PERCEPTION_REGISTER_LIDARDETECTOR(CNNSegmentation);

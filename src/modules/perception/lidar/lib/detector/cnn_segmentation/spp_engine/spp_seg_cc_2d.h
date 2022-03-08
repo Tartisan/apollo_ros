@@ -40,7 +40,7 @@ class SppCCDetector {
   // @brief: initialize detector
   // @param [in]: rows of feature map
   // @param [in]: cols of feature map
-  void Init(int rows, int cols, std::string sensor_name) {
+  void Init(int rows, int cols) {
     if (rows_ * cols_ != rows * cols) {
       if (nodes_ != nullptr) {
         common::IFree2(&nodes_);
@@ -48,13 +48,8 @@ class SppCCDetector {
       nodes_ = common::IAlloc2<Node>(rows, cols);
       rows_ = static_cast<int>(rows);
       cols_ = static_cast<int>(cols);
-      sensor_name_ = sensor_name;
     }
     CleanNodes();
-
-    static ros::NodeHandle nh;
-    pub_instance_pt_ = nh.advertise<visualization_msgs::MarkerArray>(
-        "/perception/lidar/detector/instance_pt", 1);
   }
   // @brief: set data for clusterin
   // @param [in]: probability map
@@ -62,7 +57,7 @@ class SppCCDetector {
   // @param [in]: scale of offset map
   // @param [in]: objectness threshold
   void SetData(const float* const* prob_map, const float* offset_map,
-               float scale, int range, float objectness_threshold);
+               float scale, float objectness_threshold);
   // @brief: detect clusters
   // @param [out]: label image
   // @return: label number
@@ -142,14 +137,11 @@ class SppCCDetector {
  private:
   int rows_ = 0;
   int cols_ = 0;
-  std::string sensor_name_;
   Node** nodes_ = nullptr;
 
   const float* const* prob_map_ = nullptr;
   const float* offset_map_ = nullptr;
   float scale_ = 0.f;
-  float resolution_ = 0.f;
-  int range_ = 0;
   float objectness_threshold_ = 0.f;
 
   lib::ThreadWorker worker_;
@@ -158,7 +150,6 @@ class SppCCDetector {
  private:
   static const size_t kDefaultReserveSize = 500;
 
-  ros::Publisher pub_instance_pt_;
 };  // class SppCCDetector
 
 }  // namespace lidar

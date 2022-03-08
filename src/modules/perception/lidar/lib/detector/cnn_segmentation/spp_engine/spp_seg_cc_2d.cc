@@ -25,13 +25,11 @@ namespace perception {
 namespace lidar {
 
 void SppCCDetector::SetData(const float* const* prob_map,
-                            const float* offset_map, float scale, int range, 
+                            const float* offset_map, float scale, 
                             float objectness_threshold) {
   prob_map_ = prob_map;
   offset_map_ = offset_map;
   scale_ = scale;
-  resolution_ = 1.0 / scale_;
-  range_ = range;
   objectness_threshold_ = objectness_threshold;
   worker_.Bind(std::bind(&SppCCDetector::CleanNodes, this));
   worker_.Start();
@@ -42,21 +40,6 @@ bool SppCCDetector::BuildNodes(int start_row_index, int end_row_index) {
   const float* offset_col_ptr = offset_map_ + (rows_ + start_row_index) * cols_;
   const float* prob_map_ptr = prob_map_[0] + start_row_index * cols_;
   Node* node_ptr = nodes_[0] + start_row_index * cols_;
-
-  visualization_msgs::MarkerArray arrow_list;
-  visualization_msgs::Marker arrow;
-  int count = 0;
-  arrow.header.frame_id = sensor_name_;
-  arrow.header.stamp = ros::Time::now();
-  arrow.action = visualization_msgs::Marker::ADD;
-  arrow.type = visualization_msgs::Marker::ARROW;
-  arrow.pose.orientation.w = 1.0;
-  arrow.scale.x = 0.02;
-  arrow.scale.y = 0.04;
-  // Line list is blue
-  arrow.color.g = 0.8;
-  arrow.color.a = 1.0;
-
   for (int row = start_row_index; row < end_row_index; ++row) {
     for (int col = 0; col < cols_; ++col) {
       bool is_object = *prob_map_ptr++ >= objectness_threshold_;
@@ -68,21 +51,8 @@ bool SppCCDetector::BuildNodes(int start_row_index, int end_row_index) {
       center_row = std::max(0, std::min(rows_ - 1, center_row));
       center_col = std::max(0, std::min(cols_ - 1, center_col));
       (node_ptr++)->center_node = center_row * cols_ + center_col;
-
-      if (is_object) {
-        arrow.id = count;
-        arrow.points.clear();
-        geometry_msgs::Point p;
-        GroupPixel2Pc(col, row, resolution_, range_, &p.x, &p.y);
-        arrow.points.push_back(p);
-        GroupPixel2Pc(center_col, center_row, resolution_, range_, &p.x, &p.y);
-        arrow.points.push_back(p);
-        arrow_list.markers.push_back(arrow);
-        count++;
-      }
     }
   }
-  pub_instance_pt_.publish(arrow_list);
   return true;
 }
 

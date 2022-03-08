@@ -26,11 +26,7 @@
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/Quaternion.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <pcl/point_types.h>
-#include <pcl/point_cloud.h>
-#include <pcl_conversions/pcl_conversions.h>
-#include <pcl_ros/point_cloud.h>
+#include <visualization_msgs/MarkerArray.h>
 
 using ::apollo::cyber::Clock;
 
@@ -78,10 +74,6 @@ bool DetectionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) {
             "/perception/lidar_frame/segmented_objects", 1);
     pub_objects_polygon_ = nh.advertise<visualization_msgs::MarkerArray>(
         "/perception/lidar_frame/polygon", 1);
-    pub_non_ground_points_ = nh.advertise<sensor_msgs::PointCloud2>(
-        "/perception/lidar_frame/non_ground_points", 1);
-    pub_ground_points_ = nh.advertise<sensor_msgs::PointCloud2>(
-        "/perception/lidar_frame/ground_points", 1);
   }
 
   if (!InitAlgorithmPlugin()) {
@@ -192,7 +184,7 @@ bool DetectionComponent::InternalProc(
 
 void DetectionComponent::VisualizeLidarFrame(
     const apollo::common::Header &header, lidar::LidarFrame *frame) {
-  // segmented_objects
+  // segmented_objects boundingbox and polygon 
   jsk_recognition_msgs::BoundingBoxArray bounding_boxes;
   bounding_boxes.header.frame_id = header.frame_id();
   bounding_boxes.header.stamp = ros::Time(header.timestamp_sec());
@@ -240,36 +232,6 @@ void DetectionComponent::VisualizeLidarFrame(
   }
   pub_segmented_objects_.publish(bounding_boxes);
   pub_objects_polygon_.publish(polygons);
-
-  // non_ground_points
-  pcl::PointCloud<pcl::PointXYZI> non_ground_points;
-  pcl::PointCloud<pcl::PointXYZI> ground_points;
-  AINFO << "non_ground_indices size: " << frame->non_ground_indices.indices.size();
-  int non_ground_indice = 0;
-  for (int i = 0; i < int(frame->cloud->size()); ++i) {
-    pcl::PointXYZI point;
-    point.x = frame->cloud->at(i).x;
-    point.y = frame->cloud->at(i).y;
-    point.z = frame->cloud->at(i).z;
-    point.intensity = frame->cloud->at(i).intensity;
-
-    if (i == frame->non_ground_indices.indices[non_ground_indice]) {
-      non_ground_points.push_back(point);
-      non_ground_indice++;
-    } else {
-      ground_points.push_back(point);
-    }
-  }
-  non_ground_points.header.frame_id = header.frame_id();
-  non_ground_points.header.stamp = header.lidar_timestamp();
-  non_ground_points.width = non_ground_points.points.size();
-  non_ground_points.height = 1;
-  pub_non_ground_points_.publish(non_ground_points);
-  ground_points.header.frame_id = header.frame_id();
-  ground_points.header.stamp = header.lidar_timestamp();
-  ground_points.width = ground_points.points.size();
-  ground_points.height = 1;
-  pub_ground_points_.publish(ground_points);
 }
 
 } // namespace onboard
