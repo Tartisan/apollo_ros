@@ -21,6 +21,7 @@
 #include "modules/perception/lidar/common/lidar_error_code.h"
 #include "modules/perception/lidar/common/lidar_frame_pool.h"
 #include "modules/perception/lidar/common/lidar_log.h"
+#include "modules/perception/lidar/common/lidar_timer.h"
 #include "modules/perception/onboard/common_flags/common_flags.h"
 
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -86,12 +87,16 @@ bool DetectionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) {
 bool DetectionComponent::Proc(
     const sensor_msgs::PointCloud2::ConstPtr &ros_msg,
     const std::shared_ptr<LidarFrameMessage> &out_message) {
+  AINFO << "=============================";
   AINFO << std::setprecision(16)
         << "Enter detection_component, message timestamp: "
         << ros_msg->header.stamp.toSec()
         << " current timestamp: " << Clock::NowInSeconds();
+  lidar::Timer timer;
   auto pb_msg = std::make_shared<apollo::drivers::PointCloud>();
   ConvertPointCloudFromRosToPb(ros_msg, pb_msg);
+  double ros2pb_time = timer.toc(true);
+  AINFO << "ConvertPointCloudFromRosToPb time_cost: " << ros2pb_time;
   // auto out_message = std::make_shared<LidarFrameMessage>();
 
   bool status = InternalProc(pb_msg, out_message);
@@ -103,6 +108,8 @@ bool DetectionComponent::Proc(
         << "Leave detection_component, message timestamp: "
         << ros_msg->header.stamp.toSec()
         << " current timestamp: " << Clock::NowInSeconds();
+  double lidar_det_total_time = timer.toc(true);
+  AINFO << "detection_component time_cost: " << lidar_det_total_time;
   return status;
 }
 
@@ -197,7 +204,7 @@ void DetectionComponent::VisualizeLidarFrame(
   polygon.header.stamp = ros::Time(header.timestamp_sec());
   polygon.type = visualization_msgs::Marker::LINE_STRIP;
   polygon.action = visualization_msgs::Marker::ADD;
-  polygon.lifetime = ros::Time(0.1);
+  polygon.lifetime = ros::Duration(0.1);
   int object_count = 0;
   for (const auto &segment_object : frame->segmented_objects) {
     bounding_box.pose.position.x = segment_object->center[0];
