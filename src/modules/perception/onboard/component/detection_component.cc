@@ -25,6 +25,7 @@
 #include "modules/perception/onboard/common_flags/common_flags.h"
 
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
+#include <jsk_recognition_msgs/PolygonArray.h>
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/Quaternion.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -72,9 +73,11 @@ bool DetectionComponent::Init(ros::NodeHandle nh, ros::NodeHandle private_nh) {
   if (enable_visualize_) {
     pub_segmented_objects_ =
         nh.advertise<jsk_recognition_msgs::BoundingBoxArray>(
-            "/perception/lidar_frame/segmented_objects", 1);
+            "/perception/lidar/frame/segmented_objects", 1);
     pub_objects_polygon_ = nh.advertise<visualization_msgs::MarkerArray>(
-        "/perception/lidar_frame/polygon", 1);
+        "/perception/lidar/frame/polygon", 1);
+    pub_objects_text_ = nh.advertise<visualization_msgs::MarkerArray>(
+        "/perception/lidar/frame/text", 1);
   }
 
   if (!InitAlgorithmPlugin()) {
@@ -113,10 +116,28 @@ bool DetectionComponent::Proc(
   return status;
 }
 
+bool DetectionComponent::Proc(
+    const std::shared_ptr<apollo::drivers::PointCloud> &pb_msg,
+    const std::shared_ptr<LidarFrameMessage> &out_message) {
+  AINFO << "=============================";
+  AINFO << std::setprecision(16)
+        << "Enter detection_component, message timestamp: "
+        << pb_msg->header().timestamp_sec()
+        << " current timestamp: " << Clock::NowInSeconds();
+  lidar::Timer timer;
+  bool status = InternalProc(pb_msg, out_message);
+  AINFO << std::setprecision(16)
+        << "Leave detection_component, message timestamp: "
+        << pb_msg->header().timestamp_sec()
+        << " current timestamp: " << Clock::NowInSeconds();
+  double lidar_det_total_time = timer.toc(true);
+  AINFO << "detection_component time_cost: " << lidar_det_total_time;
+  return status;
+}
+
 bool DetectionComponent::InitAlgorithmPlugin() {
   ACHECK(common::SensorManager::Instance()->GetSensorInfo(sensor_name_,
                                                           &sensor_info_));
-
   lidar::BaseLidarObstacleDetection *detector =
       lidar::BaseLidarObstacleDetectionRegisterer::GetInstanceByName(
           detector_name_);
@@ -191,25 +212,23 @@ bool DetectionComponent::InternalProc(
 
 void DetectionComponent::VisualizeLidarFrame(
     const apollo::common::Header &header, lidar::LidarFrame *frame) {
-  // segmented_objects boundingbox and polygon 
+  // boundingbox
   jsk_recognition_msgs::BoundingBoxArray bounding_boxes;
   bounding_boxes.header.frame_id = header.frame_id();
   bounding_boxes.header.stamp = ros::Time(header.timestamp_sec());
   jsk_recognition_msgs::BoundingBox bounding_box;
   bounding_box.header.frame_id = header.frame_id();
   bounding_box.header.stamp = ros::Time(header.timestamp_sec());
+  // polygon 
   visualization_msgs::MarkerArray polygons;
-  visualization_msgs::Marker polygon;
-  polygon.header.frame_id = header.frame_id();
-  polygon.header.stamp = ros::Time(header.timestamp_sec());
-  polygon.type = visualization_msgs::Marker::LINE_STRIP;
-  polygon.action = visualization_msgs::Marker::ADD;
-  polygon.lifetime = ros::Duration(0.1);
+  // text
+  visualization_msgs::MarkerArray texts;
   int object_count = 0;
   for (const auto &segment_object : frame->segmented_objects) {
     bounding_box.pose.position.x = segment_object->center[0];
     bounding_box.pose.position.y = segment_object->center[1];
-    bounding_box.pose.position.z = segment_object->center[2];
+    bounding_box.pose.position.z = segment_object->center[2] + 
+                                   segment_object->size[2] / 2.0;
     bounding_box.dimensions.x = segment_object->size[0];
     bounding_box.dimensions.y = segment_object->size[1];
     bounding_box.dimensions.z = segment_object->size[2];
@@ -219,7 +238,12 @@ void DetectionComponent::VisualizeLidarFrame(
     bounding_box.pose.orientation = quat;
     bounding_boxes.boxes.push_back(bounding_box);
 
-    polygon.id = object_count++;
+    visualization_msgs::Marker polygon;
+    polygon.header.frame_id = header.frame_id();
+    polygon.header.stamp = ros::Time(header.timestamp_sec());
+    polygon.type = visualization_msgs::Marker::LINE_STRIP;
+    polygon.action = visualization_msgs::Marker::ADD;
+    polygon.id = object_count;
     polygon.scale.x = 0.05;
     polygon.color.r = 1;
     polygon.color.g = 1;
@@ -233,14 +257,74 @@ void DetectionComponent::VisualizeLidarFrame(
       const auto &p = segment_object->polygon.at(i % polygon_pts_size);
       point.x = p.x;
       point.y = p.y;
-      point.z = p.z;
+      point.z = p.z + segment_object->size[2] / 2.0;
       polygon.points.push_back(point);
     }
     polygons.markers.push_back(polygon);
+
+    visualization_msgs::Marker text;
+    text.header.frame_id = header.frame_id();
+    text.header.stamp = ros::Time(header.timestamp_sec());
+    text.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    text.action = visualization_msgs::Marker::ADD;
+    text.id = object_count;
+    text.scale.z = 1.5;
+    text.color.r = 1;
+    text.color.g = 1;
+    text.color.b = 1;
+    text.color.a = 1;
+    text.pose.orientation.w = 1.0;
+    text.pose.position.x = segment_object->center[0];
+    text.pose.position.y = segment_object->center[1];
+    text.pose.position.z = segment_object->center[2] + segment_object->size[2];
+    std::stringstream ss;
+    ss << (int)segment_object->type << ", " 
+       << std::fixed << std::setprecision(2) << segment_object->confidence;
+    text.text = ss.str();
+    texts.markers.push_back(text);
+
+    object_count++;
   }
   pub_segmented_objects_.publish(bounding_boxes);
   pub_objects_polygon_.publish(polygons);
+  pub_objects_text_.publish(texts);
 }
+
+
+
+  // // polygon
+  // jsk_recognition_msgs::PolygonArray polygons;
+  // geometry_msgs::PolygonStamped polygon;
+  // polygons.header.frame_id = polygon.header.frame_id = header.frame_id();
+  // polygons.header.stamp = polygon.header.stamp = ros::Time(header.timestamp_sec());
+  // int object_count = 0;
+  // for (const auto &segment_object : frame->segmented_objects) {
+  //   bounding_box.pose.position.x = segment_object->center[0];
+  //   bounding_box.pose.position.y = segment_object->center[1];
+  //   bounding_box.pose.position.z = segment_object->center[2] + 
+  //                                  segment_object->size[2] / 2.0;
+  //   bounding_box.dimensions.x = segment_object->size[0];
+  //   bounding_box.dimensions.y = segment_object->size[1];
+  //   bounding_box.dimensions.z = segment_object->size[2];
+  //   bounding_box.label = static_cast<uint32_t>(segment_object->type);
+  //   geometry_msgs::Quaternion quat =
+  //       tf::createQuaternionMsgFromYaw(segment_object->theta);
+  //   bounding_box.pose.orientation = quat;
+  //   bounding_boxes.boxes.push_back(bounding_box);
+
+  //   polygon.polygon.points.clear();
+  //   geometry_msgs::Point32 point;
+  //   int polygon_pts_size = segment_object->polygon.size();
+  //   for (int i = 0; i <= polygon_pts_size; ++i) {
+  //     const auto &p = segment_object->polygon.at(i % polygon_pts_size);
+  //     point.x = p.x;
+  //     point.y = p.y;
+  //     point.z = p.z + segment_object->size[2] / 2.0;
+  //     polygon.polygon.points.push_back(point);
+  //   }
+  //   polygons.labels.push_back(static_cast<uint32_t>(segment_object->type));
+  //   polygons.polygons.push_back(polygon);
+  // }
 
 } // namespace onboard
 } // namespace perception

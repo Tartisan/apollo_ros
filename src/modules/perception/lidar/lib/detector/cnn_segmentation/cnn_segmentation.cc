@@ -335,8 +335,10 @@ bool CNNSegmentation::Detect(const LidarDetectorOptions& options,
 
   if (cnnseg_param_.visualize_output_blob()) {
     static ros::NodeHandle nh;
-    pub_category_pt_ = nh.advertise<sensor_msgs::PointCloud2>(
-        "/perception/lidar/detector/category_pt", 1);
+    pub_category_fg_ = nh.advertise<sensor_msgs::PointCloud2>(
+        "/perception/lidar/detector/category_pt/fg", 1);
+    pub_category_bg_ = nh.advertise<sensor_msgs::PointCloud2>(
+        "/perception/lidar/detector/category_pt/bg", 1);
     pub_instance_pt_ = nh.advertise<visualization_msgs::MarkerArray>(
         "/perception/lidar/detector/instance_pt", 1);
     VisualizeOutputBlob();
@@ -454,6 +456,15 @@ void CNNSegmentation::GetObjectsFromSppEngine(
           std::distance(object->type_probs.begin(),
                         std::max_element(object->type_probs.begin(),
                                          object->type_probs.end())));
+      if (object->type == base::ObjectType::VEHICLE) {
+        // for apolloscape dataset type
+        int offset = static_cast<int>(
+            cluster->class_prob[static_cast<int>(MetaType::META_SMALLMOT)] <
+            cluster->class_prob[static_cast<int>(MetaType::META_BIGMOT)]);
+        object->sub_type = static_cast<base::ObjectSubType>(offset);
+      } else {
+        object->sub_type = static_cast<base::ObjectSubType>(0);
+      }
     }
 
     if (cnnseg_param_.do_heading()) {
@@ -516,28 +527,30 @@ bool CNNSegmentation::GetConfigs(std::string* param_file,
 
 void CNNSegmentation::VisualizeOutputBlob() {
   // category_pt_blob
-  pcl::PointCloud<pcl::PointXYZRGB> category_pt;
+  pcl::PointCloud<pcl::PointXYZI> category_fg;
+  pcl::PointCloud<pcl::PointXYZI> category_bg;
   float *obs_prob_data = category_pt_blob_->mutable_cpu_data();
   for (int i = 0; i < original_cloud_->size(); ++i) {
     const int id = point2grid_[i];
-    pcl::PointXYZRGB point;
+    pcl::PointXYZI point;
     point.x = original_cloud_->at(i).x;
     point.y = original_cloud_->at(i).y;
     point.z = original_cloud_->at(i).z;
-    point.r = 255;
-    point.g = 0;
-    point.b = 255;
+    point.intensity = original_cloud_->at(i).intensity;
     if (id < 0 || *(obs_prob_data + id) < cnnseg_param_.objectness_thresh()) {
-      point.r = 255;
-      point.g = 255;
-      point.b = 255;
+      category_bg.points.push_back(point);
+    } else {
+      category_fg.points.push_back(point);
     }
-    category_pt.points.push_back(point);
   }
-  category_pt.header.frame_id = sensor_name_;
-  category_pt.width = category_pt.points.size();
-  category_pt.height = 1;
-  pub_category_pt_.publish(category_pt);
+  category_fg.header.frame_id = sensor_name_;
+  category_fg.width = category_fg.points.size();
+  category_fg.height = 1;
+  pub_category_fg_.publish(category_fg);
+  category_bg.header.frame_id = sensor_name_;
+  category_bg.width = category_bg.points.size();
+  category_bg.height = 1;
+  pub_category_bg_.publish(category_bg);
 
   // instance_pt_blob
   float *offset_data = instance_pt_blob_->mutable_cpu_data();

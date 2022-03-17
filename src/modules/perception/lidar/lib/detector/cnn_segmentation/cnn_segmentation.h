@@ -127,7 +127,8 @@ class CNNSegmentation : public BaseLidarDetector {
   // not found by neural networks !
   std::shared_ptr<BaseLidarDetector> secondary_segmentor;
 
-  ros::Publisher pub_category_pt_;
+  ros::Publisher pub_category_fg_;
+  ros::Publisher pub_category_bg_;
   ros::Publisher pub_instance_pt_;
 
  private:

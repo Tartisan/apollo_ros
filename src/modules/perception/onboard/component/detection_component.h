@@ -42,6 +42,8 @@ class DetectionComponent {
   bool Init(ros::NodeHandle nh, ros::NodeHandle private_nh);
   bool Proc(const sensor_msgs::PointCloud2::ConstPtr& ros_msg, 
             const std::shared_ptr<LidarFrameMessage> &out_message);
+  bool Proc(const std::shared_ptr<apollo::drivers::PointCloud> &pb_msg,
+            const std::shared_ptr<LidarFrameMessage> &out_message);
   void VisualizeLidarFrame(const apollo::common::Header &header, 
                            lidar::LidarFrame *frame);
 
@@ -66,6 +68,7 @@ class DetectionComponent {
   
   ros::Publisher pub_segmented_objects_;
   ros::Publisher pub_objects_polygon_;
+  ros::Publisher pub_objects_text_;
   // std::shared_ptr<apollo::cyber::Writer<LidarFrameMessage>> writer_;
 };
 
