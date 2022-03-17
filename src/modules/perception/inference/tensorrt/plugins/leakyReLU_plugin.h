@@ -25,48 +25,70 @@ namespace apollo {
 namespace perception {
 namespace inference {
 
-class ReLUPlugin : public nvinfer1::IPlugin {
+class ReLUPlugin : public nvinfer1::IPluginV2 {
  public:
   ReLUPlugin(const ReLUParameter &param, const nvinfer1::Dims &in_dims) {
     input_dims_.nbDims = in_dims.nbDims;
     CHECK_GT(input_dims_.nbDims, 0);
     for (int i = 0; i < in_dims.nbDims; i++) {
       input_dims_.d[i] = in_dims.d[i];
-      input_dims_.type[i] = in_dims.type[i];
+      // input_dims_.type[i] = in_dims.type[i];
     }
     negative_slope_ = param.negative_slope();
   }
 
   ReLUPlugin() {}
   ~ReLUPlugin() {}
-  virtual int initialize() { return 0; }
-  virtual void terminate() {}
-  int getNbOutputs() const override { return 1; }
+  virtual int initialize() noexcept override { return 0; }
+  virtual void terminate() noexcept override {}
+  int getNbOutputs() const noexcept override { return 1; }
 
   nvinfer1::Dims getOutputDimensions(int index, const nvinfer1::Dims *inputs,
-                                     int nbInputDims) override {
+                                     int nbInputDims) noexcept override {
     nvinfer1::Dims out_dims = inputs[0];
     return out_dims;
   }
 
-  void configure(const nvinfer1::Dims *inputDims, int nbInputs,
-                 const nvinfer1::Dims *outputDims, int nbOutputs,
-                 int maxBatchSize) override {
+  void configureWithFormat(const nvinfer1::Dims *inputDims,
+                           int nbInputs,
+                           const nvinfer1::Dims *outputDims,
+                           int nbOutputs,
+                           nvinfer1::DataType type, 
+                           nvinfer1::PluginFormat format, 
+                           int maxBatchSize) noexcept override {
     input_dims_ = inputDims[0];
   }
 
-  size_t getWorkspaceSize(int maxBatchSize) const override { return 0; }
+  size_t getWorkspaceSize(int maxBatchSize) const noexcept override { return 0; }
 
-  virtual int enqueue(int batchSize, const void *const *inputs, void **outputs,
-                      void *workspace, cudaStream_t stream);
+  int enqueue(int batchSize, void const* const* inputs, void* const* outputs, 
+              void* workspace, cudaStream_t stream) noexcept override;
 
-  size_t getSerializationSize() override { return 0; }
+  size_t getSerializationSize() const noexcept override { return 0; }
 
-  void serialize(void *buffer) override {
+  void serialize(void *buffer) const noexcept override {
     char *d = reinterpret_cast<char *>(buffer), *a = d;
     size_t size = getSerializationSize();
     CHECK_EQ(d, a + size);
   }
+
+  char const* getPluginType() const noexcept override { return "ReLU"; }
+  
+  char const* getPluginVersion() const noexcept override { return "1"; }
+
+  bool supportsFormat(nvinfer1::DataType type, nvinfer1::PluginFormat format) const noexcept override {
+    return true;
+  }
+
+  void destroy() noexcept override {}
+
+  nvinfer1::IPluginV2* clone() const noexcept override {
+    return nullptr;
+  }
+
+  void setPluginNamespace(char const* pluginNamespace) noexcept override {}
+
+  char const* getPluginNamespace() const noexcept override { return "inference"; }
 
  private:
   float negative_slope_;

@@ -28,7 +28,7 @@ namespace inference {
 // i.e. DeForMaBle Position Sensitive ROI Align.
 // input0 dims: [C, H, W], input1 dims: [num_rois, 5, 1, 1]
 // input2 dims: [N, C2, H2, W2]
-class DFMBPSROIAlignPlugin : public nvinfer1::IPlugin {
+class DFMBPSROIAlignPlugin : public nvinfer1::IPluginV2 {
  public:
   DFMBPSROIAlignPlugin(
       const DFMBPSROIAlignParameter &dfmb_psroi_align_parameter,
@@ -82,32 +82,54 @@ class DFMBPSROIAlignPlugin : public nvinfer1::IPlugin {
 
   virtual ~DFMBPSROIAlignPlugin() {}
 
-  virtual int initialize() { return 0; }
-  virtual void terminate() {}
-  int getNbOutputs() const override { return 1; }
+  virtual int initialize() noexcept override { return 0; }
+  virtual void terminate() noexcept override {}
+  int getNbOutputs() const noexcept override { return 1; }
 
   nvinfer1::Dims getOutputDimensions(int index, const nvinfer1::Dims *inputs,
-                                     int nbInputDims) override {
+                                     int nbInputDims) noexcept override {
     // TODO(chenjiahao): complete input dims assertion
     return output_dims_;
   }
 
-  void configure(const nvinfer1::Dims *inputDims, int nbInputs,
-                 const nvinfer1::Dims *outputDims, int nbOutputs,
-                 int maxBatchSize) override {}
+  void configureWithFormat(const nvinfer1::Dims *inputDims,
+                           int nbInputs,
+                           const nvinfer1::Dims *outputDims,
+                           int nbOutputs,
+                           nvinfer1::DataType type, 
+                           nvinfer1::PluginFormat format, 
+                           int maxBatchSize) noexcept override {}
 
-  size_t getWorkspaceSize(int maxBatchSize) const override { return 0; }
+  size_t getWorkspaceSize(int maxBatchSize) const noexcept override { return 0; }
 
-  virtual int enqueue(int batchSize, const void *const *inputs, void **outputs,
-                      void *workspace, cudaStream_t stream);
+  int enqueue(int batchSize, void const* const* inputs, void* const* outputs, 
+              void* workspace, cudaStream_t stream) noexcept override;
 
-  size_t getSerializationSize() override { return 0; }
+  size_t getSerializationSize() const noexcept override { return 0; }
 
-  void serialize(void *buffer) override {
+  void serialize(void *buffer) const noexcept override {
     char *d = reinterpret_cast<char *>(buffer), *a = d;
     size_t size = getSerializationSize();
     CHECK_EQ(d, a + size);
   }
+
+  char const* getPluginType() const noexcept override { return "DFMBPSROIAlign"; }
+  
+  char const* getPluginVersion() const noexcept override { return "1"; }
+
+  bool supportsFormat(nvinfer1::DataType type, nvinfer1::PluginFormat format) const noexcept override {
+    return true;
+  }
+
+  void destroy() noexcept override {}
+
+  nvinfer1::IPluginV2* clone() const noexcept override {
+    return nullptr;
+  }
+
+  void setPluginNamespace(char const* pluginNamespace) noexcept override {}
+
+  char const* getPluginNamespace() const noexcept override { return "inference"; }
 
  private:
   const int thread_size_ = 512;

@@ -39,7 +39,7 @@ class SoftmaxPlugin;
 
 typedef std::map<std::string, std::vector<nvinfer1::Weights>> WeightMap;
 typedef std::map<std::string, nvinfer1::ITensor *> TensorMap;
-typedef std::map<std::string, nvinfer1::DimsCHW> TensorDimsMap;
+typedef std::map<std::string, nvinfer1::Dims3> TensorDimsMap;
 typedef std::map<std::string, std::string> TensorModifyMap;
 
 const std::map<EltwiseParameter::EltwiseOp, nvinfer1::ElementWiseOperation>

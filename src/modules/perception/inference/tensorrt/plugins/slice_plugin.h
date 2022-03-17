@@ -25,7 +25,7 @@ namespace apollo {
 namespace perception {
 namespace inference {
 
-class SLICEPlugin : public nvinfer1::IPlugin {
+class SLICEPlugin : public nvinfer1::IPluginV2 {
  public:
   SLICEPlugin(const SliceParameter &param, const nvinfer1::Dims &in_dims) {
     CHECK_GT(param.slice_point_size(), 0);
@@ -37,7 +37,7 @@ class SLICEPlugin : public nvinfer1::IPlugin {
     CHECK_GT(input_dims_.nbDims, 0);
     for (int i = 0; i < in_dims.nbDims; i++) {
       input_dims_.d[i] = in_dims.d[i];
-      input_dims_.type[i] = in_dims.type[i];
+      // input_dims_.type[i] = in_dims.type[i];
     }
 
     for (size_t i = 0; i < slice_point_.size(); i++) {
@@ -52,36 +52,86 @@ class SLICEPlugin : public nvinfer1::IPlugin {
   }
   SLICEPlugin() {}
   ~SLICEPlugin() {}
-  virtual int initialize() { return 0; }
-  virtual void terminate() {}
-  int getNbOutputs() const override {
+  virtual int initialize() noexcept override { return 0; }
+  virtual void terminate() noexcept override {}
+  int getNbOutputs() const noexcept override {
     return static_cast<int>(slice_point_.size()) + 1;
   }
   nvinfer1::Dims getOutputDimensions(int index, const nvinfer1::Dims *inputs,
-                                     int nbInputDims) override {
+                                     int nbInputDims) noexcept override {
     nvinfer1::Dims out_dims = inputs[0];
     out_dims.d[axis_] = out_slice_dims_[index];
     return out_dims;
   }
 
-  void configure(const nvinfer1::Dims *inputDims, int nbInputs,
-                 const nvinfer1::Dims *outputDims, int nbOutputs,
-                 int maxBatchSize) override {
+  void configureWithFormat(const nvinfer1::Dims *inputDims,
+                           int nbInputs,
+                           const nvinfer1::Dims *outputDims,
+                           int nbOutputs,
+                           nvinfer1::DataType type, 
+                           nvinfer1::PluginFormat format, 
+                           int maxBatchSize) noexcept override {
     input_dims_ = inputDims[0];
   }
 
-  size_t getWorkspaceSize(int maxBatchSize) const override { return 0; }
+  size_t getWorkspaceSize(int maxBatchSize) const noexcept override { return 0; }
 
-  virtual int enqueue(int batchSize, const void *const *inputs, void **outputs,
-                      void *workspace, cudaStream_t stream);
+  int enqueue(int batchSize, void const* const* inputs, void* const* outputs, 
+              void* workspace, cudaStream_t stream) noexcept override;
 
-  size_t getSerializationSize() override { return 0; }
+  size_t getSerializationSize() const noexcept override { return 0; }
 
-  void serialize(void *buffer) override {
-    char *d = reinterpret_cast<char *>(buffer), *a = d;
-    size_t size = getSerializationSize();
-    CHECK_EQ(d, a + size);
+  void serialize(void *buffer) const noexcept override {
+    char *p = reinterpret_cast<char *>(buffer);
+    auto ref = p;
+    // setPluginType(&p, "Slice");
+
+    reinterpret_cast<int *>(p)[0] = input_dims_.nbDims;
+    p += sizeof(int);
+    for (int i = 0; i < input_dims_.nbDims; ++i) {
+      reinterpret_cast<int *>(p)[0] = input_dims_.d[i];
+      p += sizeof(int);
+      // reinterpret_cast<int *>(p)[0] = static_cast<int>(input_dims_.type[i]);
+      // p += sizeof(int);
+    }
+
+    reinterpret_cast<size_t *>(p)[0] = slice_point_.size();
+    p += sizeof(size_t);
+    for (size_t i = 0; i < slice_point_.size(); ++i) {
+      reinterpret_cast<int *>(p)[0] = slice_point_[i];
+      p += sizeof(int);
+    }
+
+    reinterpret_cast<size_t *>(p)[0] = out_slice_dims_.size();
+    p += sizeof(size_t);
+    for (size_t i = 0; i < out_slice_dims_.size(); ++i) {
+      reinterpret_cast<int *>(p)[0] = out_slice_dims_[i];
+      p += sizeof(int);
+    }
+
+    reinterpret_cast<int *>(p)[0] = axis_;
+    p += sizeof(int);
+
+    CHECK(p - ref == getSerializationSize());
   }
+
+  char const* getPluginType() const noexcept override { return "Slice"; }
+  
+  char const* getPluginVersion() const noexcept override { return "1"; }
+
+  bool supportsFormat(nvinfer1::DataType type, nvinfer1::PluginFormat format) const noexcept override {
+    return true;
+  }
+
+  void destroy() noexcept override {}
+
+  nvinfer1::IPluginV2* clone() const noexcept override {
+    return nullptr;
+  }
+
+  void setPluginNamespace(char const* pluginNamespace) noexcept override {}
+
+  char const* getPluginNamespace() const noexcept override { return "inference"; }
 
  private:
   std::vector<int> slice_point_;

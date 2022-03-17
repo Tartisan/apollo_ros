@@ -103,9 +103,11 @@ __global__ void get_max_score_kernel(const int nthreads, const float *bbox_pred,
   }
 }
 
-int RCNNProposalPlugin::enqueue(int batchSize, const void *const *inputs,
-                                void **outputs, void *workspace,
-                                cudaStream_t stream) {
+int RCNNProposalPlugin::enqueue(int batchSize,
+                           void const* const* inputs, 
+                           void* const* outputs, 
+                           void* workspace,
+                           cudaStream_t stream) noexcept {
   // cls_score_softmax dims: [num_rois, 4, 1, 1]
   const float *cls_score_softmax = reinterpret_cast<const float *>(inputs[0]);
   // bbox_pred dims: [num_rois, 4 * 4 (num_class * box_dim), 1, 1]

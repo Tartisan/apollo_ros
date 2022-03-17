@@ -52,9 +52,11 @@ __global__ void cmp(const int nthreads, const float *in_data,
     }
   }
 }
-int ArgMax1Plugin::enqueue(int batchSize, const void *const *inputs,
-                           void **outputs, void *workspace,
-                           cudaStream_t stream) {
+int ArgMax1Plugin::enqueue(int batchSize,
+                           void const* const* inputs, 
+                           void* const* outputs, 
+                           void* workspace,
+                           cudaStream_t stream) noexcept {
   const int thread_size = 512;
   int block_size =
       (input_dims_.d[0] * input_dims_.d[1] * input_dims_.d[2] * batchSize +

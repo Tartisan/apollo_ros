@@ -34,8 +34,11 @@ __global__ void ReLU(const int nthreads, const Dtype *in_data,
   }
 }
 
-int ReLUPlugin::enqueue(int batchSize, const void *const *inputs,
-                        void **outputs, void *workspace, cudaStream_t stream) {
+int ReLUPlugin::enqueue(int batchSize,
+                           void const* const* inputs, 
+                           void* const* outputs, 
+                           void* workspace,
+                           cudaStream_t stream) noexcept {
   const int thread_size = 512;
   const int block_size =
       (input_dims_.d[0] * input_dims_.d[1] * input_dims_.d[2] * batchSize +

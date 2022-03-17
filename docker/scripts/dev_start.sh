@@ -1,6 +1,6 @@
 #/bin/bash
-CONTAINER_NAME=cuda11.1-melodic-ubuntu18.04
-IMG="nvidia/cuda:11.1-cudnn8-melodic-libtorch1.9.0"
+CONTAINER_NAME=cuda11.2-tensorrt8.2-libtorch1.10
+IMG="nvidia/cuda:11.2-tensorrt8.2-libtorch1.10-20220222"
 
 APOLLO_ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd -P )"
 
