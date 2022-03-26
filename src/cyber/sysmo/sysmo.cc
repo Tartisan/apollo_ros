@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright 2018 The Apollo Authors. All Rights Reserved.
+ * Copyright 2019 The Apollo Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,43 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef CYBER_CYBER_H_
-#define CYBER_CYBER_H_
+#include "cyber/sysmo/sysmo.h"
 
-#include <memory>
-#include <string>
-#include <utility>
-
-#include "cyber/common/log.h"
-// #include "cyber/component/component.h"
-#include "cyber/init.h"
-// #include "cyber/node/node.h"
-#include "cyber/task/task.h"
-#include "cyber/time/time.h"
-// #include "cyber/timer/timer.h"
+#include "cyber/common/environment.h"
 
 namespace apollo {
 namespace cyber {
 
-// std::unique_ptr<Node> CreateNode(const std::string& node_name,
-//                                  const std::string& name_space = "");
+using apollo::cyber::common::GetEnv;
+
+SysMo::SysMo() { Start(); }
+
+void SysMo::Start() {
+  auto sysmo_start = GetEnv("sysmo_start");
+  if (sysmo_start != "" && std::stoi(sysmo_start)) {
+    start_ = true;
+    sysmo_ = std::thread(&SysMo::Checker, this);
+  }
+}
+
+void SysMo::Shutdown() {
+  if (!start_ || shut_down_.exchange(true)) {
+    return;
+  }
+
+  cv_.notify_all();
+  if (sysmo_.joinable()) {
+    sysmo_.join();
+  }
+}
+
+void SysMo::Checker() {
+  while (cyber_unlikely(!shut_down_.load())) {
+    scheduler::Instance()->CheckSchedStatus();
+    std::unique_lock<std::mutex> lk(lk_);
+    cv_.wait_for(lk, std::chrono::milliseconds(sysmo_interval_ms_));
+  }
+}
 
 }  // namespace cyber
 }  // namespace apollo
-
-#endif  // CYBER_CYBER_H_

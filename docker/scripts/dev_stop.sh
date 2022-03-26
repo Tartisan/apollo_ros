@@ -2,7 +2,7 @@
 
 CONTAINER_NAME=cuda11.1-melodic-ubuntu18.04
 
-docker stop $CONTAINER_NAME
-docker rm $CONTAINER_NAME
+docker stop ${CONTAINER_NAME}
+docker rm ${CONTAINER_NAME}
 
 

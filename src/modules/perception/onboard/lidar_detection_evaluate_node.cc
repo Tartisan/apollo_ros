@@ -3,8 +3,9 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <boost/filesystem.hpp>
 
-#include "absl/strings/str_split.h"
+#include "cyber/cyber.h"
 #include "modules/perception/onboard/component/detection_component.h"
+#include "absl/strings/str_split.h"
 
 using apollo::perception::onboard::DetectionComponent;
 using apollo::perception::onboard::LidarFrameMessage;
@@ -84,9 +85,12 @@ int main(int argc, char *argv[]) {
   }
   std::string data_type = argv[1];
 
-  ros::init(argc, argv, "lidar_detection_evaluate");
+  std::string node_name = "lidar_detection_evaluate";
+  ros::init(argc, argv, node_name);
   ros::NodeHandle nh;
   ros::NodeHandle private_nh;
+
+  apollo::cyber::Init(node_name.c_str());
 
   DetectionComponent detection;
   detection.Init(nh, private_nh);

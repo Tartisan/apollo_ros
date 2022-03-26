@@ -14,28 +14,19 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef CYBER_CYBER_H_
-#define CYBER_CYBER_H_
-
-#include <memory>
-#include <string>
-#include <utility>
+#ifndef CYBER_INIT_H_
+#define CYBER_INIT_H_
 
 #include "cyber/common/log.h"
-// #include "cyber/component/component.h"
-#include "cyber/init.h"
-// #include "cyber/node/node.h"
-#include "cyber/task/task.h"
-#include "cyber/time/time.h"
-// #include "cyber/timer/timer.h"
+#include "cyber/state.h"
 
 namespace apollo {
 namespace cyber {
 
-// std::unique_ptr<Node> CreateNode(const std::string& node_name,
-//                                  const std::string& name_space = "");
+bool Init(const char* binary_name);
+void Clear();
 
 }  // namespace cyber
 }  // namespace apollo
 
-#endif  // CYBER_CYBER_H_
+#endif  // CYBER_INIT_H_

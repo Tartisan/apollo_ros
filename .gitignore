@@ -1,6 +1,7 @@
 .vscode
 /build
 /devel
+data/log/*
 
 *.bag
 *.DS_Store

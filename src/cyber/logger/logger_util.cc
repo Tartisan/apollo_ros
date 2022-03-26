@@ -14,28 +14,38 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef CYBER_CYBER_H_
-#define CYBER_CYBER_H_
+#include "cyber/logger/logger_util.h"
 
-#include <memory>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/utsname.h>
+#include <unistd.h>
+
+#include <cstdint>
+#include <cstdlib>
+#include <ctime>
 #include <string>
-#include <utility>
+#include <vector>
 
-#include "cyber/common/log.h"
-// #include "cyber/component/component.h"
-#include "cyber/init.h"
-// #include "cyber/node/node.h"
-#include "cyber/task/task.h"
-#include "cyber/time/time.h"
-// #include "cyber/timer/timer.h"
+#include "glog/logging.h"
 
 namespace apollo {
 namespace cyber {
+namespace logger {
 
-// std::unique_ptr<Node> CreateNode(const std::string& node_name,
-//                                  const std::string& name_space = "");
+static int32_t g_main_thread_pid = getpid();
 
+int32_t GetMainThreadPid() { return g_main_thread_pid; }
+
+bool PidHasChanged() {
+  int32_t pid = getpid();
+  if (g_main_thread_pid == pid) {
+    return false;
+  }
+  g_main_thread_pid = pid;
+  return true;
+}
+
+}  // namespace logger
 }  // namespace cyber
 }  // namespace apollo
-
-#endif  // CYBER_CYBER_H_

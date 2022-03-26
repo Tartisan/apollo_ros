@@ -4,7 +4,7 @@ IMG="nvidia/cuda:11.1-cudnn8-melodic-libtorch1.9.0"
 
 APOLLO_ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd -P )"
 
-if [ "$(readlink -f /apollo)" != "${APOLLO_ROOT_DIR}" ]; then
+if [ "$(readlink -f /apollo_ros)" != "${APOLLO_ROOT_DIR}" ]; then
     sudo ln -snf ${APOLLO_ROOT_DIR} /apollo_ros
 fi
 
@@ -14,6 +14,14 @@ ROS_ENV="-e ROS_DOMAIN_ID=$(date +%N) \
     	 -e ROS_MASTER_URI=http://${LOCAL_IP}:11311 \
 		 -e ROS_IP=${LOCAL_IP} \
 		 -e ROS_HOSTNAME=${LOCAL_IP}"
+
+# GLOG
+GLOG_ENV="-e GLOG_log_dir=/apollo_ros/data/log \
+		  -e GLOG_alsologtostderr=0 \
+		  -e GLOG_colorlogtostderr=1 \
+		  -e GLOG_minloglevel=0"
+# for DEBUG log
+# -e GLOG_v=4
 
 docker stop ${CONTAINER_NAME} > /dev/null 2>&1
 docker rm ${CONTAINER_NAME} > /dev/null 2>&1
@@ -55,6 +63,7 @@ docker run -it --gpus all -d \
 		-e NVIDIA_VISIBLE_DEVICES=all \
 		-e NVIDIA_DRIVER_CAPABILITIES=compute,graphics,video,utility \
 		${ROS_ENV} \
+		${GLOG_ENV} \
 		-v /tmp/.X11-unix:/tmp/.X11-unix:rw \
 		-v /media:/media \
 		-v ${HOME}/.cache:${DOCKER_HOME}/.cache \
@@ -65,5 +74,3 @@ docker run -it --gpus all -d \
 		-w /apollo_ros \
 		$IMG \
 		/bin/bash
-
-

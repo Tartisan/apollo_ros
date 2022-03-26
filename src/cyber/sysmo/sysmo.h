@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright 2018 The Apollo Authors. All Rights Reserved.
+ * Copyright 2019 The Apollo Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,43 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef CYBER_CYBER_H_
-#define CYBER_CYBER_H_
+#ifndef CYBER_SYSMO_SYSMO_H_
+#define CYBER_SYSMO_SYSMO_H_
 
-#include <memory>
+#include <chrono>
+#include <condition_variable>
+#include <list>
+#include <mutex>
 #include <string>
-#include <utility>
+#include <thread>
 
-#include "cyber/common/log.h"
-// #include "cyber/component/component.h"
-#include "cyber/init.h"
-// #include "cyber/node/node.h"
-#include "cyber/task/task.h"
-#include "cyber/time/time.h"
-// #include "cyber/timer/timer.h"
+#include "cyber/scheduler/scheduler_factory.h"
 
 namespace apollo {
 namespace cyber {
 
-// std::unique_ptr<Node> CreateNode(const std::string& node_name,
-//                                  const std::string& name_space = "");
+using apollo::cyber::scheduler::Scheduler;
+
+class SysMo {
+ public:
+  void Start();
+  void Shutdown();
+
+ private:
+  void Checker();
+
+  std::atomic<bool> shut_down_{false};
+  bool start_ = false;
+
+  int sysmo_interval_ms_ = 100;
+  std::condition_variable cv_;
+  std::mutex lk_;
+  std::thread sysmo_;
+
+  DECLARE_SINGLETON(SysMo);
+};
 
 }  // namespace cyber
 }  // namespace apollo
 
-#endif  // CYBER_CYBER_H_
+#endif  // CYBER_SYSMO_SYSMO_H_

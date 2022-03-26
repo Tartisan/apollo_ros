@@ -789,6 +789,7 @@ bool RTNet::Init(const std::map<std::string, std::vector<int>> &shapes) {
 }
 bool RTNet::checkInt8(const std::string &gpu_name,
                       nvinfer1::IInt8Calibrator *calibrator) {
+  AINFO << "gpu_name: " << gpu_name;
   if (calibrator == nullptr) {
     AINFO << "Device Works on FP32 Mode.";
     return false;

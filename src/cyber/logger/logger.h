@@ -14,28 +14,33 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef CYBER_CYBER_H_
-#define CYBER_CYBER_H_
+#ifndef CYBER_LOGGER_LOGGER_H_
+#define CYBER_LOGGER_LOGGER_H_
 
-#include <memory>
-#include <string>
-#include <utility>
+#include <mutex>
 
-#include "cyber/common/log.h"
-// #include "cyber/component/component.h"
-#include "cyber/init.h"
-// #include "cyber/node/node.h"
-#include "cyber/task/task.h"
-#include "cyber/time/time.h"
-// #include "cyber/timer/timer.h"
+#include "glog/logging.h"
 
 namespace apollo {
 namespace cyber {
+namespace logger {
 
-// std::unique_ptr<Node> CreateNode(const std::string& node_name,
-//                                  const std::string& name_space = "");
+class Logger : public google::base::Logger {
+ public:
+  explicit Logger(google::base::Logger* wrapped);
+  ~Logger();
+  void Write(bool force_flush, time_t timestamp, const char* message,
+             int message_len) override;
+  void Flush() override;
+  uint32_t LogSize() override;
 
+ private:
+  google::base::Logger* const wrapped_;
+  std::mutex mutex_;
+};
+
+}  // namespace logger
 }  // namespace cyber
 }  // namespace apollo
 
-#endif  // CYBER_CYBER_H_
+#endif  // CYBER_LOGGER_LOGGER_H_

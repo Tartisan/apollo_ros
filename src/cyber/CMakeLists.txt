@@ -23,6 +23,7 @@ endif()
 
 add_library(${PROJECT_NAME} 
   binary.cc
+  init.cc
   state.cc
   # common
   common/file.cc
@@ -31,6 +32,11 @@ add_library(${PROJECT_NAME}
   ${SWAP_CPP}
   croutine/detail/routine_context.cc
   croutine/croutine.cc
+  # logger
+  logger/async_logger.cc
+  logger/log_file_object.cc
+  logger/logger_util.cc
+  logger/logger.cc
   # message
   message/protobuf_factory.cc
   # record

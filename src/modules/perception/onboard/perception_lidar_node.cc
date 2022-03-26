@@ -1,6 +1,7 @@
 #include "modules/perception/onboard/component/detection_component.h"
 #include "modules/perception/onboard/component/fusion_component.h"
 #include "modules/perception/onboard/component/recognition_component.h"
+#include "cyber/cyber.h"
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 
@@ -70,10 +71,12 @@ private:
 
 
 int main(int argc, char *argv[]) {
-  ros::init(argc, argv, "perception_lidar");
+  std::string node_name = "perception_lidar";
+  ros::init(argc, argv, node_name);
   ros::NodeHandle nh;
   ros::NodeHandle private_nh;
 
+  apollo::cyber::Init(node_name.c_str());
   apollo::perception::onboard::FusionLidarDetection node(nh, private_nh);
   ros::spin();
   return 0;
